@@ -1,0 +1,132 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
+{% load static %} 
+{% block content %}
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Grupo Módulo Permisos</title>  
+    <style>  
+        body {  
+            background-color: #F5F1DA;  
+            font-family: Arial, sans-serif;  
+            margin: 0;  
+            padding: 20px;  
+        }  
+        h1 {  
+            text-align: center;  
+            color: #333;  
+            font-size: 18px;  
+            margin-top: 40px;  
+        }  
+        .container {  
+            display: flex;  
+            flex-wrap: wrap;  
+            justify-content: center;  
+            gap: 20px;  
+            margin-bottom: 20px;  
+        }  
+        .card {  
+            background-color: #F2F1F8;  
+            border-radius: 8px;  
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  
+            padding: 20px;  
+            text-align: center;  
+            width: 250px;  /* Width of cards */
+            margin-top: 10px;  /* Added margin to lower the groups */
+        }  
+        .active-text {  
+            font-size: 12px;  /* Tamaño de fuente más pequeño */  
+            color: #666;  /* Color más claro para el texto activo */  
+        }  
+        .delete-button {  
+            background-color: #FF2C30;  
+            color: white;  
+            border: none;  
+            border-radius: 5px;  
+            padding: 6px 10px;  /* Ajustado el padding lateral para hacerlo más angosto */
+            cursor: pointer;  
+            margin-top: 6px;  
+        }  
+        .pagination {  
+            display: flex;  
+            justify-content: center;  
+            gap: 5px;  
+            margin: 20px 0;  
+        }  
+        .page-button {  
+            background-color: #e0e0e0;  
+            border: none;  
+            border-radius: 5px;  
+            padding: 10px 15px;  
+            cursor: pointer;  
+        }  
+        .home-button {  
+            background-color: #e0e0e0;  
+            border: none;  
+            border-radius: 5px;  
+            padding: 10px 15px;  
+            cursor: pointer;  
+            margin-top: 20px;  
+            margin-left: 10px;  /* Add margin to the left for spacing */
+        }  
+        .center-button {  
+            display: flex;  
+            justify-content: center;  
+            margin-top: 20px;  
+        }
+    </style>  
+</head>  
+
+<h1>Grupo Módulo Permisos</h1>  
+<div class="container">  
+    <!-- First row of cards -->
+    <div class="card">  
+        <p>Aprendizaje</p>  
+        <p class="active-text">Activo: Sí</p> <!-- Texto adicional -->
+        <button class="delete-button">Eliminar</button>  
+    </div>  
+    <div class="card">  
+        <p>Dashboard</p>  
+        <p class="active-text">Activo: Sí</p> <!-- Texto adicional -->
+        <button class="delete-button">Eliminar</button>  
+    </div>  
+    <div class="card">  
+        <p>Feedback</p>  
+        <p class="active-text">Activo: Sí</p> <!-- Texto adicional -->
+        <button class="delete-button">Eliminar</button>  
+    </div>  
+</div>
+
+<div class="container">  
+    <!-- Second row of cards -->
+    <div class="card">  
+        <p>Grupos Módulos Permisos</p>  
+        <p class="active-text">Activo: Sí</p> <!-- Texto adicional -->
+        <button class="delete-button">Eliminar</button>  
+    </div>  
+    <div class="card">  
+        <p>Módulos</p>  
+        <p class="active-text">Activo: Sí</p> <!-- Texto adicional -->
+        <button class="delete-button">Eliminar</button>  
+    </div>  
+</div>
+
+<div class="pagination">  
+    <button class="page-button">1</button>  
+    <button class="page-button">2</button>  
+    <button class="page-button">3</button>  
+</div>  
+
+<!-- Centering the button -->
+<div class="center-button">
+    <button class="home-button">+ Nuevo Módulo</button> 
+    <button class="home-button">
+        <img src="{% static 'img/iconcasa.png' %}" alt="Home" style="width: 20px; height: 20px;"> 
+    </button>  
+</div>
+
+</body>  
+</html>  
+
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
+{% load static %}
+{% block content %}
+
+<head>
+    <style>
+        /* Contenedor principal */
+        .dashboard-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .logo img {
+            max-width: 150px;
+        }
+
+        .profile-btn {
+            background-color: #ddd;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        /* Contenido principal: clima e imagen + gráfico de detalles */
+        .main-content {
+            display: flex;
+            justify-content: space-between; /* Para alinear las secciones lado a lado */
+            margin-top: 20px;
+        }
+
+        /* Sección de clima */
+        .weather-section {
+            display: flex;
+            align-items: center;
+            background-color: #F5F1DA;
+            padding: 20px;
+            border-radius: 8px;
+            width: 60%; /* Ajustar ancho de la sección de clima */
+        }
+
+        .weather-info {
+            margin-right: 20px;
+        }
+
+        .weather-info h2 {
+            font-size: 3rem;
+            margin: 0;
+        }
+
+        .weather-info p {
+            margin: 0;
+        }
+
+        .weather-img img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Sección de detalles y gráfico */
+        .details-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 40%; /* Ajustar el ancho de la sección de detalles */
+            margin-left: 7px; /* Separación entre secciones */
+        }
+
+        .details-section h4 {
+            margin-bottom: 20px;
+        }
+
+        .chart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-circle img {
+            width: 250px;
+            height: 250px;
+        }
+
+        .chart-legend {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .chart-legend li {
+            margin-bottom: 10px;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .purple {
+            background-color: purple;
+        }
+
+        .yellow {
+            background-color: yellow;
+        }
+
+        .blue {
+            background-color: blue;
+        }
+
+        /* Sección de niveles */
+        .levels-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .level-card {
+            padding: 20px;
+            border-radius: 8px;
+            width: calc(50% - 10px); /* Para acomodar dos tarjetas por fila */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Colores específicos para cada nivel */
+        .level-1 {
+            background-color: #A0A38A; /* Color para Nivel 1 */
+        }
+
+        .level-2 {
+            background-color: #F1CBA3; /* Color dorado para Nivel 2 */
+        }
+
+        .level-3 {
+            background-color: #EAAD7D; /* Color naranja para Nivel 3 */
+        }
+
+        .level-finalizado {
+            background-color: #E37E18; /* Color verde para Finalizado */
+        }
+
+
+        .level-card h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .level-card p {
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .level-card span {
+            font-size: 1rem;
+        }
+        .weather-img img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 20px; /* Ajusta el valor para hacer las puntas más redondeadas */
+        }        
+        
+
+    </style>
+</head>
+
+<div class="dashboard-container">
+
+    <!-- Contenido del Dashboard (Sección de clima e imagen + gráfico de detalles) -->
+    <div class="main-content">
+        <!-- Sección de clima e imagen -->
+        <div class="weather-section">
+            <div class="weather-img">
+                <img src="{% static 'img/clima.jpg' %}" alt="Imagen Clima">
+            </div>
+        </div>
+
+        <!-- Gráfico de detalles -->
+        <div class="details-section">
+            <h4>Detalles</h4>
+            <div class="chart">
+                <div class="chart-circle">
+                    <!-- Aquí incluirías tu gráfico circular o una imagen representativa -->
+                    <img src="{% static 'img/rueda.jpg' %}" alt="Gráfico">
+                </div>
+                <ul class="chart-legend" style="font-size: 1.7em;">
+                    <li><span class="dot purple"></span>Total de registrados</li>
+                    <li><span class="dot yellow"></span>Total que terminaron el curso</li>
+                    <li><span class="dot blue"></span>Total de los que están cursando</li>
+                </ul>                
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalles de niveles y alumnos -->
+    <div class="levels-section">
+        <div class="level-card level-1">
+            <h3>Nivel 1</h3>
+            <p>50,120</p>
+            <span>Alumnos totales</span>
+        </div>
+        <div class="level-card level-2">
+            <h3>Nivel 2</h3>
+            <p>21,045</p>
+            <span>Alumnos totales</span>
+        </div>
+        <div class="level-card level-3">
+            <h3>Nivel 3</h3>
+            <p>10,010</p>
+            <span>Alumnos totales</span>
+        </div>
+        <div class="level-card level-finalizado">
+            <h3>Finalizado</h3>
+            <p>43,710</p>
+            <span>Alumnos totales</span>
+        </div>
+    </div>
+    
+</div>
+
+{% endblock %}

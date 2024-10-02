@@ -1,0 +1,73 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
+{% load static %}
+{% block content %}
+
+<!-- Courses Section Start -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h5 class="text-primary text-uppercase mb-3" style="letter-spacing: 5px;">Niveles</h5>
+            <h1>Aprende con nosotros!</h1>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-6 mb-4">
+                <div class="rounded overflow-hidden mb-2" style="max-width: 100%; height: 300px;">
+                    <img class="img-fluid" src="{% static 'img/alfabeto.jpeg' %}" alt="" style="height: 175px; width: 100%; object-fit: cover;">
+                    <div class="bg-secondary p-4" style="height: 150px;">
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="m-0"><i class="fa fa-users text-primary mr-2"></i>Nivel 1</small>
+                        </div>
+                        <a class="h5" href="">Alfabeto</a>
+                        <a class="h6 d-block" href="" style="font-size: 14px;">
+                            <u>Feedback</u> <i class="fa fa-lock ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-6 mb-4">
+                <div class="rounded overflow-hidden mb-2" style="max-width: 100%; height: 300px;">
+                    <img class="img-fluid" src="{% static 'img/numeros.jpeg' %}" alt="" style="height: 175px; width: 100%; object-fit: cover;">
+                    <div class="bg-secondary p-4" style="height: 150px;">
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="m-0"><i class="fa fa-users text-primary mr-2"></i>Nivel 2</small>
+                        </div>
+                        <a class="h5" href="">Números</a>
+                        <a class="h6 d-block" href="" style="font-size: 14px;">
+                            <u>Feedback</u> <i class="fa fa-lock ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-6 mb-4">
+                <div class="rounded overflow-hidden mb-2" style="max-width: 100%; height: 300px;">
+                    <img class="img-fluid" src="{% static 'img/colores.jpeg' %}" alt="" style="height: 175px; width: 100%; object-fit: cover;">
+                    <div class="bg-secondary p-4" style="height: 150px;">
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="m-0"><i class="fa fa-users text-primary mr-2"></i>Nivel 3</small>
+                        </div>
+                        <a class="h5" href="">Colores</a>
+                        <a class="h6 d-block" href="" style="font-size: 14px;">
+                            <u>Feedback</u> <i class="fa fa-lock ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-6 mb-4">
+                <div class="rounded overflow-hidden mb-2" style="max-width: 100%; height: 300px;">
+                    <img class="img-fluid" src="{% static 'img/evaluacion.webp' %}" alt="" style="height: 175px; width: 100%; object-fit: cover;">
+                    <div class="bg-secondary p-4" style="height: 150px;">
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="m-0"><i class="fa fa-users text-primary mr-2"></i>Nivel 4</small>
+                        </div>
+                        <a class="h5" href="{% url 'core:evaluacion' %}" onclick="closeDropdown()"
+                        >Evaluación Final</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Courses Section End -->
+
+{% endblock %}

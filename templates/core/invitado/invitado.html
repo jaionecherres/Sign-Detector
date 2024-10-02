@@ -1,0 +1,55 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
+{% load static %}
+{% block content %}
+<head>
+    <style>
+        /* Contenedor padre: Flexbox */
+        .parent-container {
+            display: flex;
+            justify-content: center; /* Centrar horizontalmente */
+            align-items: center;     /* Centrar verticalmente si es necesario */
+            height: 100vh; /* Ajusta si quieres centrarlo verticalmente en la página */
+        }
+
+        /* Estilos para el div hijo */
+        .col-lg-5.col-md-6.mb-4 {
+            margin: 0 auto; /* Centra horizontalmente */
+            width: 100%; /* Ajusta el ancho al 100% del contenedor padre */
+            max-width: 500px; /* Tamaño máximo del contenedor */
+        }
+        .img-fluid {
+            width: 100%; /* Ajusta el ancho al 100% del contenedor */
+            height: 100%; /* Hace la imagen cuadrada en relación al ancho del contenedor */
+            object-fit: cover; /* Asegura que la imagen cubra todo el área del contenedor */
+            border-radius: 0; /* Elimina cualquier borde redondeado */
+        }
+        
+
+    </style>
+</head>
+<!-- Courses Section Start -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h5 class="text-primary text-uppercase mb-3" style="letter-spacing: 5px;">Prueba</h5>
+            <h1>Aprende con nosotros!</h1>
+        </div>
+            <div class="col-lg-5 col-md-6 mb-4">
+                <div class="rounded overflow-hidden mb-2" style="max-width: 100%; height: 300px;">
+                    <img class="img-fluid" src="{% static 'img/numeros-letras.jpg' %}" alt="" style="height: 175px; width: 100%; object-fit: cover;">
+                    <div class="bg-secondary p-4" style="height: 150px;">
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="m-0"><i class="fa fa-users text-primary mr-2"></i>Nivel 0</small>
+                        </div>
+                        <a class="h5" href="" onclick="closeDropdown()"
+                        >Prueba</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Courses Section End -->
+
+{% endblock %}

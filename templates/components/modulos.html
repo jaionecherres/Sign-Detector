@@ -1,0 +1,41 @@
+{% extends 'components/base.html' %}
+{% load static %}
+<title>{% block title %} {{ title1 }} {% endblock title %}</title>
+{% block content %}
+    <!-- SECCION DE MENU Y MODULOS -->
+     <section class="">
+        <div class="p-8" data-aos="fade-up" data-aos-delay="300">
+            
+            <h1 class="dark:text-white text-4xl text-center mt-16 font-Pacifico">
+                {{title2}}
+            </h1>
+            <p class="dark:text-gray-400  text-center mt-6 text-4xl font-light">
+                Bienvenido <span class="dark:text-white text-4xl text-center mt-6 font-Pacifico"> {{user.username}} </span>
+            </p>
+            {% for menu_wrapper in menu_list %} 
+                <div class="w-screen flex border-b-2 border-gray-200 py-4 opacity-90">
+                    <i class="{{menu_wrapper.menu.icon}} text-3xl text-green-500"></i>
+                    <h3 class="dark:text-gray-400 font-bold characteristics-card-title"><a href="">menu {{menu_wrapper.menu.name}}</a></h3>
+                </div>
+                <div class="dark:bg-principal grid sm:grid-cols-2 lg:grid-cols-4 gap-8 m-4 lg:mx-4 lg:p-4 rounded-3xl"
+                data-aos="fade-up" data-aos-delay="300">
+                 {% for group_modulo_permission in menu_wrapper.group_module_permission_list %}
+                    <div
+                        class="characteristics-card bg-white dark:bg-secundario dark:border-none transition duration-500 hover:bg-gradient-to-r hover:from-purple-200 dark:hover:bg-gradient-to-r dark:hover:from-black dark:hover:to-purple-500">
+                        <i class="{{group_modulo_permission.module.icon}} text-3xl text-purple-500"></i>
+                        <h3 class="dark:text-gray-400 font-bold characteristics-card-title"><a href="{{group_modulo_permission.module.url}}">{{group_modulo_permission.module.name}}</a></h3>
+                    </div>
+                {% endfor %}
+                </div> 
+            {% endfor %}
+           
+        </div>
+    </section>
+    <!-- CIERRE DE SECCION DE MENU Y MODULOS -->
+ 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <script src="{% static 'js/sweet_alert.js' %}"></script>
+{% endblock content %}

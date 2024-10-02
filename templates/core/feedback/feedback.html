@@ -1,0 +1,39 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
+{% load static %}
+{% block content %}
+<body class="bodyfeed hide-buttons">
+    <div class="card-eva">
+        <h1>Leccion de Retroalimentaciòn</h1>
+        <div class="containerfeed">
+            <!-- Cuadro izquierdo -->
+            <div class="left-box">
+                <h2>Tutoria Guiada</h2> <!-- Título agregado -->
+                <p>Contenido aquí</p>
+            </div>
+    
+            <!-- Cuadro derecho con la cámara -->
+            <div class="camera-container">
+                <h2>Detector de Señales IA</h2> <!-- Título agregado -->
+                <video id="video" autoplay></video>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Acceder a la cámara del usuario
+        (function() {
+            const video = document.getElementById('video');
+
+            // Solicitar acceso a la cámara
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                })
+                .catch(function(err) {
+                    console.log("Error al acceder a la cámara: " + err);
+                });
+        })();
+    </script>
+</body>
+{% endblock %}

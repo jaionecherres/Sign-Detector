@@ -1,0 +1,233 @@
+{% extends 'components/base.html' %}
+{% load static %}
+
+{% block content %}
+<head>
+    <style>
+        /* Contenedor con Flexbox para las columnas */
+        .profile-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+        
+        /* Mover la imagen a la primera posición */
+        #imagenPreview {
+            order:0; /* Coloca la imagen en la primera columna */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            right: 50px
+        }
+        
+        #imagenPreview img {
+            width: 40vw;  /* El ancho de la imagen será el 30% del ancho de la ventana */
+            height: auto; /* La altura se ajustará automáticamente para mantener la proporción */
+        }
+        
+        
+
+
+        /* Estilo del Texto 'Perfil de Usuario' */
+        #perfilUsuario {
+        font-size: 1.5rem; /* Tamaño de la fuente */
+        font-weight: bold; /* Negrita */
+        color: #333; /* Color del texto */
+        position: relative; /* Posicionamiento relativo para poder moverlo */
+        top: 20px; /* Mueve el texto hacia abajo */
+        left: 45px; /* Mueve el texto hacia la derecha */
+        margin-bottom: 20px; /* Espacio entre el texto y la imagen */
+        }
+
+        .columna-derecha-usuario {
+            transform: translateX(280px); /* Ajusta este valor para mover el formulario a la derecha */
+        }
+
+        /* Asegurar que todos los inputs tengan el mismo tamaño */
+        input[type="text"],
+        input[type="email"],
+        input[type="number"] {
+            width: 100%; /* Hacer que ocupe todo el espacio disponible dentro de su columna */
+            padding: 10px; /* Padding consistente en todos los inputs */
+            box-sizing: border-box; /* Asegura que el padding se incluya en el ancho total */
+            background-color: #D9D9D9
+        }
+
+        /* Alinear el grid de los campos de formulario */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Dos columnas iguales */
+            gap: 20px; /* Espacio entre los cuadros */
+        }
+
+        /* Asegurar que las etiquetas estén alineadas con sus inputs */
+        label {
+            font-weight: bold;
+            display: block; /* Asegura que la etiqueta esté alineada encima del input */
+            margin-bottom: 10px; /* Espacio entre la etiqueta y el input */
+            
+        }
+
+        /* Hacer que los inputs mantengan una altura uniforme */
+        input {
+            height: 45px; /* Ajusta este valor para que todos los inputs tengan la misma altura */
+            border-radius: 6px;
+            background-color: #D9D9D9
+        }
+
+        /* Media Query para pantallas pequeñas: columnas en una sola fila */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
+            }
+        }
+        
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Solo una columna */
+            gap: 1.5rem; /* Espaciado entre los elementos */
+        }
+        
+        .button-container {
+            display: flex;
+            flex-direction: column; /* Coloca los botones en una columna */
+            gap: 20px; /* Ajusta el espacio entre los botones */
+            width: 100%; /* Hace que los botones ocupen todo el ancho de su contenedor */
+            margin-top: 50px; /* Ajusta el margen superior si lo necesitas */
+        }
+        
+        /* Contenedor general de los botones Guardar y Cancelar */
+        .button-containerr {
+            display: flex;              /* Usamos flexbox para alinear los botones */
+            justify-content: center;    /* Centramos los botones horizontalmente */
+            align-items: center;        /* Alineamos los botones verticalmente */
+            margin-top: 20px;           /* Espacio superior */
+            gap: 30px;                  /* Espacio entre los botones */
+        }
+
+        /* Estilos para el botón Guardar */
+        .button-guardar {
+            background-color: #a0a38a;  /* Color de fondo */
+            color: white;               /* Color del texto */
+            padding: 0.5rem 1rem;       /* Espaciado interno (padding) */
+            border-radius: 9999px;      /* Bordes redondeados */
+            border: none;               /* Sin borde */
+            display: flex;              /* Alinear el ícono y el texto del botón */
+            align-items: center;        /* Alinear el ícono y el texto verticalmente */
+            cursor: pointer;            /* Cambia el cursor cuando pasas el ratón */
+        }
+
+        /* Estilos para el botón Cancelar */
+        .button-cancelar {
+            background-color: #E37E18;  /* Color de fondo */
+            color: white;               /* Color del texto */
+            padding: 0.5rem 1rem;       /* Espaciado interno (padding) */
+            border-radius: 9999px;      /* Bordes redondeados */
+            border: none;               /* Sin borde */
+            display: flex;              /* Alinear el ícono y el texto del botón */
+            align-items: center;        /* Alinear el ícono y el texto verticalmente */
+            cursor: pointer;            /* Cambia el cursor cuando pasas el ratón */
+        }
+
+        /* Espaciado entre el ícono y el texto dentro del botón */
+        button i {
+            margin-right: 8px;          /* Espacio entre el ícono y el texto */
+        }
+
+        
+    </style>
+</head>
+<body class="bodyeditprofile hide-buttons">
+    <title>{% block title %} {{ title1 }} {% endblock title %}</title>
+    <section class="dark:bg-principal mt-20" style="background-color: #F5F1DA;">
+        <div class="flex flex-col items-center justify-center">
+            <span class="rounded-full bg-indigo-500 px-2 py-1 text-white uppercase text-sm">
+                {{ title1 }}
+            </span>
+        </div>
+        <div class="text-center" data-aos="fade" data-aos-delay="200">
+            <h1 class="dark:text-white text-4xl text-center mt-6 font-black my-2">
+                {{ title2 }}
+            </h1>
+            <h4 class="dark:text-gray-400 text-center mt-6 text-lg font-light">Actualizar</h4>
+            <h2 class="dark:text-blue-300 text-2xl text-center mt-6 font-black my-2 mb-4">Actualizar Contraseña</h2>
+            <p class="dark:text-gray-400 text-center mt-6 text-lg font-light">
+                Complete el formulario para actualizar su información.
+            </p>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="space-y-6 py-4">
+            <div class="grid grid-cols-2 gap-8 mx-1 lg:mx-40" data-aos="fade">
+                
+                <!-- Contenedor principal que agrupa imagen y detalles -->
+                <div class="col-lg-9 ml-auto">
+                    <!-- Contenedor para alinear la imagen y los detalles -->
+                    <div class="profile-container" style="display: flex; align-items: flex-start; gap: 20px;">
+                        <div class="flex flex-col md:flex-row justify-center mt-6 w-full px-4" style="transform: translateX(50px);">
+                            <!-- Texto 'Perfil de Usuario' -->
+                            <h2 id="perfilUsuario">Perfil de Usuario</h2>
+                        
+                            <!-- Imagen de Perfil -->
+                            <div class="form-grid">
+                                <!-- Aquí estaría la primera columna donde va la imagen -->
+                                <div id="imagenPreview">
+                                    {% if user.get_image %}
+                                        <img src="{{ user.get_image }}" alt="Foto de perfil" style="width: 200px; height: 200px;">
+                                    {% else %}
+                                        <img src="{% static 'img/Taylor.jpg' %}" alt="Foto de perfil por defecto" style="width: 270px; height: 270px;">
+                                    {% endif %}
+                                </div>
+                            
+                                <!-- Aquí la segunda columna para datos de usuario -->
+                                <div class="user-data">
+                                    <!-- Inputs para nombre, correo, etc. -->
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        <!-- Columna derecha: Datos de usuario -->
+                        <div class="p-4 rounded-3xl dark:bg-secundario flex flex-col justify-center items-center columna-derecha-usuario" data-aos="fade-right" data-aos-delay="200">
+                            {% csrf_token %}
+                            <!-- Cuadrícula para colocar los elementos en una columna -->
+                            <div class="form-grid">
+                                <div class="mb-6">
+                                    <label for="old_password" class="dark:text-blue-300 font-black uppercase text-lg">Contraseña Actual</label>
+                                    <input type="password" id="old_password" name="old_password" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" required>
+                                </div>
+                                <div class="mb-6">
+                                    <label for="id_new_password1" class="dark:text-blue-300 font-black uppercase text-lg">Nueva Contraseña</label>
+                                    <input type="password" id="id_new_password1" name="new_password1" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" required>
+                                </div>
+                                <div class="mb-6">
+                                    <label for="id_new_password2" class="dark:text-blue-300 font-black uppercase text-lg">Confirmar Nueva Contraseña</label>
+                                    <input type="password" id="id_new_password2" name="new_password2" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" required>
+                                </div>
+                            </div>
+
+                            <div class="button-containerr" style="display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 30px;">
+                                <!-- Botón Guardar -->
+                                <button type="submit" class="button-guardar">
+                                    <i class="fa-solid fa-save mr-2"></i>Guardar
+                                </button>
+                            
+                                <!-- Botón Cancelar -->
+                                <button type="button" class="button-cancelar">
+                                    <i class="fa-solid fa-xmark mr-2"></i>Cancelar
+                                </button>
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+                </div>  
+            </div>
+        </form>
+    </section>
+
+</body>
+
+
+{% endblock %}

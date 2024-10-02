@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Mi Sitio Web{% endblock %}</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free HTML Templates" name="keywords">
+    <meta content="Free HTML Templates" name="description">
+    {% load static %}
+    {% load static tailwind_tags %}
+	<!-- Tailwind css -->
+	{% tailwind_css %}
+    <!-- Favicon -->
+    <link href="{% static 'img/favicon.ico' %}" rel="icon">
+
+	<!-- Flowbite JS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+    
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"> 
+
+	<!-- AOS Library -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"
+		integrity="sha512-1cK78a1o+ht2JcaW6g8OXYwqpev9+6GqOkz9xmBN9iUUhIndKtxwILGWYOSibOKjLsEdjyjZvYDq/cZwNeak0w=="
+		crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Libraries Stylesheet -->
+    <link href="{% static 'lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+    
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+	<script>
+		// Aplicar el tema tan pronto como sea posible
+		(function() {
+			const isDarkModeEnabled = localStorage.getItem('darkModeEnabled') === 'true';
+			if (isDarkModeEnabled) {
+				document.documentElement.classList.add('dark');
+			}
+			document.documentElement.classList.add('loaded');
+		})();
+		(function() {
+			const savedTheme = localStorage.getItem('theme') || 'light';
+			document.documentElement.className = savedTheme;
+			document.documentElement.classList.add('loaded');
+		  })();
+	</script>
+	
+
+	<style>
+        /* ANIMACIÓN DE CARGA */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9); /* Bacground de fondo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Posicionarce sobre todos los elementos */
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .h-24 {
+            height: 6rem; /* 24 * 0.25rem */
+        }
+
+        .w-24 {
+            width: 6rem; /* 24 * 0.25rem */
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .border-t-8 {
+            border-top-width: 8px;
+        }
+
+        .border-b-8 {
+            border-bottom-width: 8px;
+        }
+
+        .border-gray-200 {
+            border-color: #edf2f7; /* Tailwind's gray-200 */
+        }
+
+        .border-blue-500 {
+            border-color: #4299e1; /* Tailwind's blue-500 */
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+    </style>
+
+	<style>
+
+		/* Cuadro de la paleta de temas */
+		.rect {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: 1fr 1fr;
+			width: 60px;
+			height: 60px;
+			border-radius: 0.5rem;
+			overflow: hidden;
+			margin-right: 1rem;
+		}
+		
+		.rect div {
+			width: 100%;
+			height: 100%;
+		}
+
+		/* SECCIÓN DE TEMAS */
+		/* TEMA NARANJA */
+		.theme1 .text-primary {
+			color: #ffccbc;
+		}
+		
+		.theme1 .bg-primary {
+			background-color: #fff7ed;
+			color: white;
+		}
+		
+		.theme1 .text-secondary {
+			color: orange;
+		}
+
+		.theme1 .bg-navbar {
+			background-color: #ff9800;
+			color: white;
+		}
+		
+		.theme1 .border {
+			border-color: orange;
+		}
+
+		.theme1 .text {
+			text: white
+		}
+
+		.theme1 .hero-background {
+			background-image: url('{% static 'img/background.png' %}')!important;
+		}
+
+		/* TEMA AZUL */
+		.theme2 .text-primary {
+			color: #cfe8ff;
+		}
+		
+		.theme2 .bg-primary {
+			background-color: #e3f2fd;
+			color: white;
+		}
+		
+		.theme2 .text-secondary {
+			color: #007bff;
+		}
+
+		.theme2 .bg-navbar {
+			background-color: #007bff;
+			color: white;
+		}
+		
+		.theme2 .border {
+			border-color: blue;
+		}
+
+		.theme2 .text {
+			text: white
+		}
+
+		.theme2 .hero-background {
+			background-image: url('{% static 'img/fondo_azul.png' %}')!important;
+		}
+
+	</style>
+
+</head>
+<body class="text-secondary loading text-items font-Quicksand text-lg font-light">
+	<!-- Navbar -->
+	{% block navbar %}
+	<header class="bg-navbar top-0 left-0 right-0 z-50 bg-transparent fixed w-full transition duration-300 ease-in-out">
+		<nav class="border-gray-200 dark:bg-principal">
+            <!-- Topbar Start -->
+            <div class="container-fluid d-none d-lg-block">
+                <div class="row align-items-center py-4 px-xl-5">
+                    <!-- Columna para el logo y la casa -->
+                    <div class="col-lg-3 d-flex align-items-center">
+                        <a href="/modulos/" class="text-decoration-none">
+                            <img src="{% static 'img/logodulnane.jpeg' %}" alt="Logo de DULNANE" style="height: 50px; width: 250px;">
+                        </a>
+                        <a href="" class="text-decoration-none" style="margin-left: 20px;"> <!-- Ajusta el margen aquí -->
+                            <img src="{% static 'img/iconcasa.png' %}" alt="Icono de casa" style="height: 20px; width: 20px;">
+                        </a>
+                    </div>
+                    <!-- Columna para el círculo de perfil -->
+                    <div class="col-lg-9 d-flex justify-content-end">
+                        <button type="button"
+                            class="flex text-sm rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 dropdown-toggle"
+                            id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown"
+                            data-dropdown-placement="bottom">
+                            <span class="sr-only">Open user menu</span>
+                            {% if user.is_authenticated %}
+                                <img class="w-12 h-12 rounded-full" src="{{ user.get_image }}" alt="Profile Picture">
+                            {% else %}
+                                <img class="w-12 h-12 rounded-full" src="{% static 'img/usuario_anonimo.png' %}"
+                                    alt="Anonymous Profile Picture">
+                            {% endif %}
+                        </button>
+
+                <div class="dark:bg-secundario rounded-2xl bg-white z-50 hidden my-4 list-none divide-y divide-gray-200 shadow" id="user-dropdown">
+                    {% if user.is_authenticated %}
+                    <div class="px-4 py-3">
+                    <span class="block font-extrabold text-gray-500 truncate dark:text-gray-400">{{ user.username }}</span>
+                    <span class="block font-extrabold text-gray-500 truncate dark:text-gray-400">{{ user.email }}</span>
+                    </div>
+                    <ul class="dark:bg-secundario py-2" aria-labelledby="user-menu-button">
+                        {% for group in group_list %}
+                            <li>
+                            <a href="/modulos/?gpid={{group.id}}" onclick="closeDropdown()"
+                                class="block px-4 py-2 font-bold text-gray-500 truncate dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">{{group.name}}</a>
+                            </li>
+                        {% endfor %}
+                
+                    </ul>
+                    <ul class="dark:bg-secundario py-2" aria-labelledby="user-menu-button">
+                    <li>
+                        <a href="{% url 'security:auth_profile' %}" onclick="closeDropdown()"
+                        class="block px-4 py-2 font-bold text-gray-500 truncate dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">Perfil</a>
+                    </li>
+                
+                    <li>
+                        <a class="block px-4 py-2 font-bold text-gray-500 truncate dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all cursor-pointer"
+                        data-drawer-target="drawer-navigation" data-drawer-show="drawer-navigation"
+                        aria-controls="drawer-navigation" onclick="closeDropdown()">
+                        Temas
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="block px-4 py-2 font-bold text-gray-500 truncate dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all cursor-pointer"
+                        data-drawer-target="drawer-left-example" data-drawer-show="drawer-left-example" data-drawer-placement="left"
+                        aria-controls="drawer-left-example" onclick="closeDropdown()">
+                        Autenticación Biométrica
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="{% url 'security:auth_logout' %}" onclick="closeDropdown()"
+                        class="block px-4 py-2 font-bold text-gray-500 truncate dark:text-gray-400 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white transition-all">Cerrar Sesión</a>
+                    </li>
+                    </ul>
+                    {% else %}
+                    <ul class="py-2" aria-labelledby="user-menu-button">
+                    <li>
+                        <a href="{% url 'security:auth_signup' %}" onclick="closeDropdown()"
+                        class="block px-4 py-2 font-bold text-gray-500 truncate dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-500 transition-all">Registrarse</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'security:auth_login' %}" onclick="closeDropdown()"
+                        class="block px-4 py-2 font-bold text-gray-500 truncate dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-500 transition-all">Iniciar Sesión</a>
+                    </li>
+                    </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Script para ocultar el menu despues de seleccionar una opción -->
+                <script>
+                    function closeDropdown() {
+                    document.getElementById('user-dropdown').classList.add('hidden');
+                    }
+                </script>
+					
+					<script>
+						document.getElementById('toggleModules').addEventListener('click', function(event) {
+							event.preventDefault();
+							var moduleDropdown = document.getElementById('moduleDropdown');
+							moduleDropdown.classList.toggle('hidden');
+						});
+					</script>
+				</div>
+    {% endblock navbar %}
+    <section class="">
+        {% block content %}
+        {% endblock content %}
+    </section>
+    </header>
+	<!-- Dropdowns de perfil -->
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const profilePicture = document.getElementById('profile-picture');
+			const profileMenu = document.getElementById('profile-menu-items');
+
+			if (profilePicture && profileMenu) {
+				profilePicture.addEventListener('mouseover', () => {
+					profileMenu.classList.remove('hidden');
+				});
+
+				profileMenu.addEventListener('mouseleave', () => {
+					profileMenu.classList.add('hidden');
+				});
+
+				// Opcional: para ocultar el menú si el cursor sale de la imagen y no entra en el menú
+				profilePicture.addEventListener('mouseleave', () => {
+					setTimeout(() => {
+						if (!profileMenu.matches(':hover')) {
+							profileMenu.classList.add('hidden');
+						}
+					}, 200); // Puedes ajustar el tiempo según sea necesario
+				});
+			}
+		});
+	</script>
+</body>
+</html>
