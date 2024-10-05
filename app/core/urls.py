@@ -4,10 +4,10 @@ from app.core.vista import invitado, niveles
 app_name='core' # define un espacio de nombre para la aplicación
 urlpatterns = [ 
     #Niveles
-    path('level_list/', niveles.LevelListView.as_view() ,name='level_list'),
-    path('level_create/', niveles.LevelCreateView.as_view(),name='level_create'),
-    path('level_update/<int:pk>/', niveles.LevelUpdateView.as_view(),name='level_update'),
-    path('level_delete/<int:pk>/', niveles.LevelDeleteView.as_view(),name='level_delete'),   
+    # path('level_list/', niveles.LevelListView.as_view() ,name='level_list'),
+    # path('level_create/', niveles.LevelCreateView.as_view(),name='level_create'),
+    # path('level_update/<int:pk>/', niveles.LevelUpdateView.as_view(),name='level_update'),
+    # path('level_delete/<int:pk>/', niveles.LevelDeleteView.as_view(),name='level_delete'),   
     
     
     

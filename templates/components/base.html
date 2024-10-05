@@ -30,7 +30,10 @@
 	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+		integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+		crossorigin="anonymous" referrerpolicy="no-referrer" />    
+        
     <!-- Iconos -->
 	<link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
     <!-- Libraries Stylesheet -->
@@ -317,6 +320,105 @@
     </section>
 
     </header>
+    <!-- Scripts -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="{% static 'js/sweet_alert.js' %}"></script>
+	<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"
+		integrity="sha512-A7AYk1fGKX6S2SsHywmPkrnzTZHrgiVT7GcQkLGDe2ev0aWb8zejytzS8wjo7PGEXKqJOrjQ4oORtnimIRZBtw=="
+		crossorigin="anonymous" referrerpolicy="no-referrer">
+		</script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<!-- jQuery 1.8+ -->
+	<script src="{% static 'plugin/components/jQuery/jquery-1.11.3.min.js' %}"></script>
+	<!-- Plugin JS file -->
+	<script src="{% static 'plugin/components/moment/moment.min.js' %}"></script>
+	<script src="{% static 'plugin/components/moment/moment-timezone-with-data.min.js' %}"></script>
+	<script src="{% static 'plugin/whatsapp-chat-support.js' %}"></script>
+
+	<!-- Script para hacer que las notificaciones desaparezcan después de 5 segundos -->
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			var notifications = document.querySelectorAll('.notification');
+			notifications.forEach(function (notification) {
+				setTimeout(function () {
+					notification.remove();
+				}, 5000);
+			});
+		});
+	</script>
+
+	<script>
+		function no_disponible() {
+			Swal.fire({
+				icon: 'info',
+				title: '¡Lo sentimos!',
+				text: 'Este tema aún no está disponible',
+				confirmButtonText: 'Aceptar',
+				confirmButtonColor: '#2563EB',
+			});
+		}
+	</script>
+	<!-- Para mostrar y ocultar el modal de navbar en pantallas pequenas -->
+	<script>
+		const menuButton = document.getElementById('menu-button');
+		const modal = document.getElementById('modal');
+
+		menuButton.addEventListener('click', () => {
+			modal.classList.add('flex');
+			modal.classList.remove('hidden');
+		});
+		window.addEventListener('click', (e) => {
+			if (e.target === modal) {
+				modal.classList.add('hidden');
+				modal.classList.remove('flex');
+			}
+		});
+	</script>
+
+	<!-- Para que el boton de volver al principio aparezca -->
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			window.addEventListener('scroll', function () {
+				var goTopBtn = document.getElementById('goTopBtn');
+				if (window.scrollY > 100) {
+					goTopBtn.classList.remove('translate-y-20');
+					goTopBtn.classList.remove('opacity-0');
+					goTopBtn.classList.add('translate-y-0');
+					goTopBtn.classList.add('opacity-100');
+				} else {
+					goTopBtn.classList.add('translate-y-20');
+					goTopBtn.classList.add('opacity-0');
+					goTopBtn.classList.remove('translate-y-0');
+					goTopBtn.classList.remove('opacity-100');
+				}
+			});
+
+			document.getElementById('goTopBtn').addEventListener('click', function () {
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			});
+		});
+	</script>
+
+	<!-- Para mostrar y ocultar dropdowns -->
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			var menuItems = document.querySelectorAll('.group');
+			menuItems.forEach(function (item) {
+				item.addEventListener('mouseenter', function () {
+					var dropdown = this.querySelector('.absolute');
+					dropdown.classList.remove('hidden');
+				});
+				item.addEventListener('mouseleave', function () {
+					var dropdown = this.querySelector('.absolute');
+					setTimeout(function () {
+						dropdown.classList.add('hidden');
+					}, 500); // 500 milisegundos de retraso
+				});
+			});
+		});
+	</script>
+
 	<!-- Dropdowns de perfil -->
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
@@ -341,6 +443,104 @@
 					}, 200); // Puedes ajustar el tiempo según sea necesario
 				});
 			}
+		});
+	</script>
+
+	<!-- Iniciar chat de Whatsapp -->
+	<script>
+		$('#button-w').whatsappChatSupport({
+			defaultMsg: '',
+		});
+	</script>
+
+	<!-- Inicializar AOS -->
+	<script>
+		AOS.init();
+	</script>
+
+	<script>
+		window.addEventListener('scroll', function () {
+			var navbar = document.querySelector('header');
+			if (window.scrollY > 0) {
+				navbar.classList.remove('bg-transparent');
+				navbar.classList.add('bg-white', 'shadow-md');
+			} else {
+				navbar.classList.remove('bg-white', 'shadow-md');
+				navbar.classList.add('bg-transparent');
+			}
+		});
+	</script>
+
+	<!---THEMES MODE-->
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const themeToggleBtn = document.getElementById('themeIconContainer');
+			const themeIcon = document.getElementById('themeIcon');
+
+			// Función para cambiar el ícono del tema
+			function toggleThemeIcon() {
+				if (document.documentElement.classList.contains('dark')) {
+					themeIcon.classList.remove('fa-moon');
+					themeIcon.classList.add('fa-sun');
+				} else {
+					themeIcon.classList.remove('fa-sun');
+					themeIcon.classList.add('fa-moon');
+				}
+			}
+
+			// Función para aplicar un tema y actualizar el ícono
+			function setTheme(theme) {
+				document.documentElement.className = theme;
+				localStorage.setItem('theme', theme); // Guarda el tema seleccionado en localStorage para persistencia
+
+				// Mostrar u ocultar la imagen de fondo según el tema seleccionado (si es necesario)
+				const heroSection = document.getElementById('hero-section');
+				if (heroSection) {
+					if (theme === 'theme1') {
+						heroSection.classList.remove('no-background');
+					} else {
+						heroSection.classList.add('no-background');
+					}
+				}
+
+				// Cambia el ícono del tema
+				toggleThemeIcon();
+			}
+
+			// Verifica si hay un tema guardado en el almacenamiento local
+			const savedTheme = localStorage.getItem('theme') || 'light';
+			setTheme(savedTheme);
+
+			// Cambiar el ícono del tema al cargar la página
+			toggleThemeIcon();
+
+			// Agrega un listener para el evento 'click' en el botón
+			themeToggleBtn.addEventListener('click', function (event) {
+				event.preventDefault(); // Previene el comportamiento predeterminado del ícono
+				// Cambia entre temas light y dark
+				if (document.documentElement.classList.contains('dark')) {
+					setTheme('light');
+				} else {
+					setTheme('dark');
+				}
+			});
+
+			// Exponer setTheme globalmente para usarlo en el menú de temas
+			window.setTheme = setTheme;
+		});
+	</script>
+
+
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			// Espera hasta que la página esté completamente cargada
+			window.addEventListener('load', function () {
+				// Ocultar el loader
+				document.getElementById('loader').style.display = 'none';
+
+				// Mostrar el contenido del sitio web
+				document.getElementById('content').classList.remove('hidden');
+			});
 		});
 	</script>
 </body>
