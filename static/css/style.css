@@ -10320,17 +10320,17 @@ input[type="password"]::placeholder {
 
 .card-register {
   width: 100%; /* Ancho completo del recuadro */
-  max-width: 375px; /* Reducir el ancho máximo */
+  max-width: 400px; /* Ancho máximo para mantener un límite */
   height: auto; /* Altura automática según contenido */
-  padding: 30px; /* Reducir el padding */
+  padding: 40px; /* Reducir el padding horizontal */
   background-color: transparent; /* Fondo transparente */
-  backdrop-filter: blur(20px); /* Reducir el difuminado del fondo */
-  border: 2px solid white; /* Reducir el grosor del borde */
-  border-radius: 15px; /* Bordes ligeramente menos redondeados */
+  backdrop-filter: blur(25px); /* Difuminado del fondo detrás del recuadro */
+  border: 2px solid white; /* Borde blanco alrededor del recuadro */
+  border-radius: 20px; /* Bordes redondeados */
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; /* Centrar verticalmente */
+  align-items: center; /* Centrar horizontalmente */
   transition: transform 0.3s ease;
 }
 
