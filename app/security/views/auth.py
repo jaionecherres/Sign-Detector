@@ -74,7 +74,7 @@ def signin(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect("home")
+                return redirect("modulos")
             else:
                 messages.error(request, "El usuario o la contraseña son incorrectos")
         return render(request, "security/auth/signin.html", {"form": form, "error": "Datos inválidos", **data})

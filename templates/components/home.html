@@ -1,7 +1,6 @@
 {% extends 'components/base.html' %}
 {% load static %}
-
-{% block title %}{{ title1 }}{% endblock %}
+<title>{% block title %} {{ title1 }} {% endblock title %}</title>
 
 {% block content %}
 <style>
@@ -127,12 +126,10 @@
             </a>
         </div>
     {% endif %}
-
 </section>
-
     <!-- SECCIÓN DE MODULOS -->
-    {% if user.is_authenticated and user.is_superuser %}
-    <section >
+    {% if user.is_superuser %}
+    <section class=" dark:bg-principal" id="herramientas">
         <div class="p-8" data-aos="fade-up" data-aos-delay="300">
             <div class="flex flex-col items-center justify-center">
                 <span class="bg-navbar rounded-full bg-indigo-500 px-2 py-1 text-white uppercase text-sm">

@@ -8,24 +8,22 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('first_name', 'last_name','phone','email', 'password1','password2','phone', 'image')
-
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'direction', 'phone', 'image')
 class CustomUserUpdateForm(UserChangeForm):
     password = None  # No incluir el campo de contraseña
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name','phone','email','phone', 'image')
+        fields = ('username', 'first_name', 'last_name', 'email', 'direction', 'phone', 'image')
         widgets = {
-            'image': forms.FileInput(attrs={'class': 'form-control-file'}),
+            'image': forms.FileInput(attrs={'class': 'form-control-file'})
         }
-        
 class CustomUserUpdateForm(UserChangeForm):
     password = None  # No incluir el campo de contraseña
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name','phone','email','phone', 'image')
+        fields = ('username', 'first_name', 'last_name', 'email', 'direction', 'phone', 'image')
         widgets = {
             'image': forms.FileInput(attrs={'class': 'form-control-file'}),
         }
