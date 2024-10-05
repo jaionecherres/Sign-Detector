@@ -3,9 +3,11 @@ from crum import get_current_request
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
+from django.contrib.auth.models import BaseUserManager
 from django.db import models
 from django.forms import model_to_dict
 
+# ficha,prestamos,nomina
 class Menu(models.Model):
     name = models.CharField(verbose_name='Nombre', max_length=150, unique=True)
     icon = models.CharField(verbose_name='Icono', max_length=100)
@@ -92,6 +94,27 @@ class GroupModulePermission(models.Model):
         verbose_name = 'Grupo modulo permiso'
         verbose_name_plural = 'Grupos modulos Permisos'
         ordering = ('-id',)
+        
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, username, first_name, last_name, password=None, **extra_fields):
+        if not email:
+            raise ValueError('El usuario debe tener un email.')
+        email = self.normalize_email(email)
+        user = self.model(email=email, username=username, first_name=first_name, last_name=last_name, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, username, first_name, last_name, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('El superusuario debe tener is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('El superusuario debe tener is_superuser=True.')
+
+        return self.create_user(email, username, first_name, last_name, password, **extra_fields)
 
 
 class User(AbstractUser):
@@ -102,34 +125,37 @@ class User(AbstractUser):
         blank=True,
         null=True
     )
-    email = models.EmailField('Email', unique=True)
-    direction = models.CharField('Direccion', max_length=200, blank=True, null=True)
-    phone = models.CharField('Telefono', max_length=50, blank=True, null=True)
-
-    # Añadir los campos groups y user_permissions con related_name únicos
-    groups = models.ManyToManyField(
-        Group,
-        related_name='custom_user_set',  # Cambiar a un related_name único
-        blank=True
-    )
-    
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name='custom_user_permissions',  # Cambiar a un related_name único
-        blank=True
-    )
-
-    USERNAME_FIELD = "email"  # Cambia el login
+    email = models.EmailField('Email',unique=True)
+    direction=models.CharField('Direccion',max_length=200,blank=True,null=True)
+    phone=models.CharField('Telefono',max_length=50,blank=True,null=True)
+  
+    USERNAME_FIELD = "email" # cambia el login
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
+    objects = CustomUserManager()
+    
     class Meta:
         verbose_name = "Usuario"
         verbose_name_plural = "Usuarios"
+        # crea un nuevo permiso al modelo
         permissions = (
-            ("change_userprofile", f"Cambiar perfil {verbose_name}"),
-            ("change_userpassword", f"Cambiar password {verbose_name}"),
+            (
+                "change_userprofile",
+                f"Cambiar perfil {verbose_name}"
+            ),
+            (
+                "change_userpassword",
+                f"Cambiar password {verbose_name}"
+            ),
+          
         )
-
+    
+    # def save(self, *args, **kwargs):
+    #     # Comprueba si la contraseña ha cambiado
+    #     if self.pk is None or not User.objects.filter(pk=self.pk, password=self.password).exists():
+    #         self.set_password(self.password)
+    #     super().save(*args, **kwargs)
+        
     def __str__(self):
         return '{}'.format(self.username)
 
@@ -145,17 +171,21 @@ class User(AbstractUser):
 
     def get_group_session(self):
         request = get_current_request()
-        print("request==>", request)
+        print("request==>",request)
         return Group.objects.get(pk=request.session['group_id'])
 
     def set_group_session(self):
         request = get_current_request()
+
         if 'group' not in request.session:
+
             groups = request.user.groups.all().order_by('id')
+
             if groups.exists():
                 request.session['group'] = groups.first()
                 request.session['group_id'] = request.session['group'].id
 
+    
     def get_image(self):
         if self.image:
             return self.image.url
@@ -183,8 +213,3 @@ class AuditUser(models.Model):
         verbose_name = 'Auditoria Usuario '
         verbose_name_plural = 'Auditorias Usuarios'
         ordering = ('-fecha', 'hora')
-
-
-
-
-
