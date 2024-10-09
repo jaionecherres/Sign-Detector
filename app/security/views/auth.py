@@ -66,6 +66,7 @@ def signin(request):
     if request.method == "GET":
         success_messages = messages.get_messages(request)
         return render(request, "security/auth/signin.html", {"form": AuthenticationForm(), "success_messages": success_messages, **data})
+    
     else:
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
@@ -74,11 +75,28 @@ def signin(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect("modulos")
+
+                # Verifica si el usuario pertenece al grupo de administradores
+                if user.groups.filter(name='Administradores').exists():
+                    return redirect("modulos")  # Redirige a los módulos de seguridad
+                else:
+                    return redirect("levels")  # Redirige a los módulos de lecciones
+
             else:
                 messages.error(request, "El usuario o la contraseña son incorrectos")
+        
         return render(request, "security/auth/signin.html", {"form": form, "error": "Datos inválidos", **data})
+
 @login_required
+def modulos_seguridad(request):
+    # Lógica para mostrar los módulos de seguridad
+    return render(request, "security/modulos.html")
+
+@login_required
+def modulos_lecciones(request):
+    # Lógica para mostrar los módulos de lecciones para usuarios
+    return render(request, "core/course.html")
+
 def actulizarcontra(request):
     # Cambiar contraseña del usuario
     data = {"title1": "CS-ACTUALIZAR", "title2": "Actualizar Contraseña"}

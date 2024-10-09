@@ -61,6 +61,11 @@
 	
 
 	<style>
+        body {
+            overflow-y: auto;
+            height: auto;
+        }
+
         /* ANIMACIÓN DE CARGA */
         .overlay {
             position: fixed;
@@ -205,6 +210,27 @@
 			background-image: url('{% static 'img/fondo_azul.png' %}')!important;
 		}
 
+        /* Estilos generales para el botón de imagen de perfil */
+        #user-menu-button {
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px; /* Puedes ajustar este valor según el tamaño que prefieras */
+            height: 60px; /* Tamaño del círculo */
+            border-radius: 9999px; /* Círculo */
+            overflow: hidden; /* Asegura que la imagen se ajuste al círculo */
+        }
+
+        /* Imagen dentro del botón */
+        #user-menu-button img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Asegura que la imagen no se deforme */
+            border-radius: 9999px; /* Hace que la imagen también sea circular */
+        }
+
+
 	</style>
 
 </head>
@@ -226,19 +252,22 @@
                         </a>
                     </div>
                     <!-- Columna para el círculo de perfil -->
-                    <div class="col-lg-9 d-flex justify-content-end">
+                    <div class="col-lg-9 d-flex justify-content-end align-items-center">
                         <button type="button"
-                            class="flex text-sm rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 dropdown-toggle"
+                            class="text-sm rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
                             id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown"
-                            data-dropdown-placement="bottom">
+                            data-dropdown-placement="bottom"
+                            style="padding: 0; display: flex; justify-content: center; align-items: center; width: 60px; height: 60px;">
                             <span class="sr-only">Open user menu</span>
                             {% if user.is_authenticated %}
-                                <img class="w-12 h-12 rounded-full" src="{{ user.get_image }}" alt="Profile Picture">
+                                <img class="rounded-full" src="{{ user.get_image }}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
                             {% else %}
-                                <img class="w-12 h-12 rounded-full" src="{% static 'img/usuario_anonimo.png' %}"
-                                    alt="Anonymous Profile Picture">
+                                <img class="rounded-full" src="{% static 'img/usuario_anonimo.png' %}" alt="Anonymous Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
                             {% endif %}
                         </button>
+                    </div>
+
+
 
                 <div class="dark:bg-secundario rounded-2xl bg-white z-50 hidden my-4 list-none divide-y divide-gray-200 shadow" id="user-dropdown">
                     {% if user.is_authenticated %}
@@ -266,14 +295,6 @@
                         data-drawer-target="drawer-navigation" data-drawer-show="drawer-navigation"
                         aria-controls="drawer-navigation" onclick="closeDropdown()">
                         Temas
-                        </a>
-                    </li>
-                
-                    <li>
-                        <a class="block px-4 py-2 font-bold text-gray-500 truncate dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all cursor-pointer"
-                        data-drawer-target="drawer-left-example" data-drawer-show="drawer-left-example" data-drawer-placement="left"
-                        aria-controls="drawer-left-example" onclick="closeDropdown()">
-                        Autenticación Biométrica
                         </a>
                     </li>
                 
@@ -541,6 +562,32 @@
 				// Mostrar el contenido del sitio web
 				document.getElementById('content').classList.remove('hidden');
 			});
+		});
+	</script>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const profilePicture = document.getElementById('profile-picture');
+			const profileMenu = document.getElementById('profile-menu-items');
+
+			if (profilePicture && profileMenu) {
+				profilePicture.addEventListener('mouseover', () => {
+					profileMenu.classList.remove('hidden');
+				});
+
+				profileMenu.addEventListener('mouseleave', () => {
+					profileMenu.classList.add('hidden');
+				});
+
+				// Opcional: para ocultar el menú si el cursor sale de la imagen y no entra en el menú
+				profilePicture.addEventListener('mouseleave', () => {
+					setTimeout(() => {
+						if (!profileMenu.matches(':hover')) {
+							profileMenu.classList.add('hidden');
+						}
+					}, 200); // Puedes ajustar el tiempo según sea necesario
+				});
+			}
 		});
 	</script>
 </body>

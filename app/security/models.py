@@ -6,6 +6,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.auth.models import BaseUserManager
 from django.db import models
 from django.forms import model_to_dict
+#from app.core.models import Progreso,Feedback,Nivel
 
 # ficha,prestamos,nomina
 class Menu(models.Model):
@@ -213,3 +214,28 @@ class AuditUser(models.Model):
         verbose_name = 'Auditoria Usuario '
         verbose_name_plural = 'Auditorias Usuarios'
         ordering = ('-fecha', 'hora')
+
+# security/models.py
+
+# class Dashboard(models.Model):
+#     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+#     nivel_actual = models.ForeignKey(Nivel, on_delete=models.SET_NULL, null=True)
+#     lecciones_completadas = models.IntegerField(verbose_name='Lecciones Completadas', default=0)
+#     total_intentos = models.IntegerField(verbose_name='Total de Intentos', default=0)
+#     intentos_exitosos = models.IntegerField(verbose_name='Intentos Exitosos', default=0)
+#     porcentaje_exito = models.DecimalField(verbose_name='Porcentaje de Éxito', max_digits=5, decimal_places=2, default=0.0)
+
+#     def actualizar_dashboard(self):
+#         progreso_niveles = Progreso.objects.filter(usuario=self.usuario, completado=True)
+#         self.lecciones_completadas = progreso_niveles.count()
+        
+#         intentos_totales = Feedback.objects.filter(usuario=self.usuario).count()
+#         intentos_correctos = Feedback.objects.filter(usuario=self.usuario, intento_correcto=True).count()
+        
+#         self.total_intentos = intentos_totales
+#         self.intentos_exitosos = intentos_correctos
+#         self.porcentaje_exito = (intentos_correctos / intentos_totales) * 100 if intentos_totales > 0 else 0.0
+#         self.save()
+
+#     def __str__(self):
+#         return f'Dashboard - {self.usuario.username}'

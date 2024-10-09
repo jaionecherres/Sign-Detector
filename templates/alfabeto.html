@@ -1,0 +1,24 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
+{% load static %}
+{% block content %}
+<body class="bodyevaluate hide-buttons">
+    <div class="card-eva">
+        <h1>Lección 1</h1>
+        <div class="containereva">
+            <!-- Cuadro izquierdo -->
+            <div class="left-box">
+                <h2>Tutoria Guiada</h2>
+                <p>Contenido aquí</p>
+            </div>
+
+            <!-- Cuadro derecho con la cámara -->
+            <div class="camera-container">
+                <h2>Detector de Señales IA</h2>
+                <!-- Transmisión en vivo de la cámara -->
+                <img src="{% url 'core:video_feed' %}" width="640" height="480" alt="Video en tiempo real">
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}
