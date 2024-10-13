@@ -9,7 +9,8 @@ from app.core.vista.levels import LevelsTemplateView
 from app.core import views
 
 urlpatterns = [
-    path('alfabeto/', views.home, name='alfabeto'),
+    path('alfabeto/', views.alfabeto, name='alfabeto'),
+    path('numeros/', views.numeros, name='numeros'),
     path('', HomeTemplateView.as_view(), name='home'),  
     path('admin/', admin.site.urls),
     #path('core/', include(('app.core.urls', 'core'), namespace='core')),
