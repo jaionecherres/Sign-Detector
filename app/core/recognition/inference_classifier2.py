@@ -15,13 +15,11 @@ model_alfabeto = None
 model_numeros = None
 
 try:
-    # Cargar modelo de alfabeto
     with open(model_alfabeto_path, 'rb') as model_file_alf:
         model_dict_alfabeto = pickle.load(model_file_alf)
         model_alfabeto = model_dict_alfabeto['model']
     print("Modelo de alfabeto cargado correctamente")
 
-    # Cargar modelo de números
     with open(model_numeros_path, 'rb') as model_file_num:
         model_dict_numeros = pickle.load(model_file_num)
         model_numeros = model_dict_numeros['model']
@@ -82,7 +80,7 @@ def predict_sign(frame, model, labels_dict):
                 print(f"Error en la predicción: {str(e)}")
                 return None
 
-    return None  # Si no se detecta nada, retornar None
+    return None  
 
 # Generador para capturar los frames y hacer predicciones
 def gen(camera, model, labels_dict):
@@ -120,7 +118,7 @@ def video_feed(request, tipo_modelo):
         else:
             print("Tipo de modelo no válido.")
     finally:
-        camera.release()  # Asegurarse de liberar la cámara cuando se termina el streaming
+        camera.release() 
         print("Cámara liberada correctamente.")
 
 # Vistas para las páginas HTML

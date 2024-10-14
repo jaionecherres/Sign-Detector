@@ -1,6 +1,7 @@
 from django.urls import path
 from app.security.views import auth, module, menu, groupmodulepermission
-app_name='security' # define un espacio de nombre para la aplicación
+
+app_name='security'
 urlpatterns = [    
     path('auth/login',auth.signin,name="auth_login"),
     path('auth/signup',auth.signup,name="auth_signup"),
@@ -21,7 +22,6 @@ urlpatterns = [
     
     path('groupmodulepermission_list/', groupmodulepermission.GroupModulePermissionListView.as_view(), name='groupmodulepermission_list'),
     path('groupmodulepermission_create/', groupmodulepermission.GroupModulePermissionCreateView.as_view(), name='groupmodulepermission_create'),
-    #path('groupmodulepermission_update/<int:pk>/', groupmodulepermission.GroupModulePermissionUpdateView.as_view(), name='groupmodulepermission_update'),
     path('groupmodulepermission_delete/<int:pk>/', groupmodulepermission.GroupModulePermissionDeleteView.as_view(), name='groupmodulepermission_delete'),
     path('get_module_permissions/<int:module_id>/', groupmodulepermission.get_module_permissions, name='get_module_permissions'),
     path('get_group_permissions/<int:group_id>/', groupmodulepermission.GroupModulePermissionCreateView.get_group_permissions, name='get_group_permissions'),

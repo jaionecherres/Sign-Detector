@@ -163,3 +163,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'security.User'
 LOGIN_URL = '/security/auth/login'
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',  # Configura el nivel de logging
+            'propagate': True,
+        },
+        '__main__': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
