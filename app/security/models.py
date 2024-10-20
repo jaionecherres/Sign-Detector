@@ -5,11 +5,11 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import BaseUserManager
 from django.db import models
+from django.db.models import Count
 from django.forms import model_to_dict
 from app.core.models import Progreso, Feedback, Nivel  
-#from app.core.models import Progreso,Feedback,Nivel
 
-# ficha,prestamos,nomina
+
 class Menu(models.Model):
     name = models.CharField(verbose_name='Nombre', max_length=150, unique=True)
     icon = models.CharField(verbose_name='Icono', max_length=100)
@@ -31,8 +31,7 @@ class Menu(models.Model):
         verbose_name_plural = 'Menus'
         ordering = ['-name']
 
-# menu ficha: modulos: empleado, cargo
-# permisos: add_empleado, view_empleado, change_empleado, delete_empleado
+
 class Module(models.Model):
     url = models.CharField(verbose_name='Url', max_length=100, unique=True)
     name = models.CharField(verbose_name='Nombre', max_length=100)
@@ -52,7 +51,6 @@ class Module(models.Model):
         blank=True
     )
 
-   
     def __str__(self):
         return '{} [{}]'.format(self.name, self.url)
 
@@ -69,9 +67,8 @@ class Module(models.Model):
         verbose_name = 'Modulo'
         verbose_name_plural = 'Modulos'
         ordering = ('-name',)
-# grupo: menu:     modulos : add,view...
-# admi: ficha: sobretiempo,rubros: add_sobretiemp,view_sobretiemp,add_rubros,view_rubros
-# auditoria: sobretiempo,rubros: add_sobretiemp,view_sobretiemp,add_rubros,view_rubros
+
+
 class GroupModulePermission(models.Model):
     group = models.ForeignKey(Group, on_delete=models.PROTECT,verbose_name='Grupo')
     module = models.ForeignKey(Module, on_delete=models.PROTECT,verbose_name='Modulo')
@@ -96,6 +93,7 @@ class GroupModulePermission(models.Model):
         verbose_name = 'Grupo modulo permiso'
         verbose_name_plural = 'Grupos modulos Permisos'
         ordering = ('-id',)
+        
         
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, first_name, last_name, password=None, **extra_fields):
@@ -131,7 +129,7 @@ class User(AbstractUser):
     direction=models.CharField('Direccion',max_length=200,blank=True,null=True)
     phone=models.CharField('Telefono',max_length=50,blank=True,null=True)
   
-    USERNAME_FIELD = "email" # cambia el login
+    USERNAME_FIELD = "email" 
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
     objects = CustomUserManager()
@@ -151,12 +149,6 @@ class User(AbstractUser):
             ),
           
         )
-    
-    # def save(self, *args, **kwargs):
-    #     # Comprueba si la contraseña ha cambiado
-    #     if self.pk is None or not User.objects.filter(pk=self.pk, password=self.password).exists():
-    #         self.set_password(self.password)
-    #     super().save(*args, **kwargs)
         
     def __str__(self):
         return '{}'.format(self.username)
@@ -194,27 +186,6 @@ class User(AbstractUser):
         else:
             return '/static/img/usuario_anonimo.png'
 
-class AuditUser(models.Model):
-    TIPOS_ACCIONES = (
-        ('A', 'A'),   # Adicion
-        ('M', 'M'),   # Modificacion
-        ('E', 'E')    # Eliminacion
-    )
-    usuario = models.ForeignKey(User, verbose_name='Usuario',on_delete=models.PROTECT)
-    tabla = models.CharField(max_length=100, verbose_name='Tabla')
-    registroid = models.IntegerField(verbose_name='Registro Id')
-    accion = models.CharField(choices=TIPOS_ACCIONES, max_length=10, verbose_name='Accion')
-    fecha = models.DateField(verbose_name='Fecha')
-    hora = models.TimeField(verbose_name='Hora')
-    estacion = models.CharField(max_length=100, verbose_name='Estacion')
-
-    def __str__(self):
-        return "{} - {} [{}]".format(self.usuario.username, self.tabla, self.accion)
-
-    class Meta:
-        verbose_name = 'Auditoria Usuario '
-        verbose_name_plural = 'Auditorias Usuarios'
-        ordering = ('-fecha', 'hora')
 
 class Dashboard(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)

@@ -8,6 +8,7 @@ from django.db.models import Q
 from app.security.forms.auth import CustomUserCreationForm, CustomUserUpdateForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.models import Group
 
 # ----------------- Perfil -----------------
 def profile(request):
@@ -39,7 +40,7 @@ def signout(request):
     logout(request)
     return redirect("home")
 
-# ----------------- Registro -----------------
+# ----------------- Registro ----------------
 def signup(request):
     data = {"title1": "IC - Registro", "title2": "Registro de Usuarios"}
     
@@ -50,8 +51,13 @@ def signup(request):
         # Procesa el formulario enviado por POST
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            # Si el formulario es válido, guarda el usuario y muestra un mensaje de éxito
+            # Si el formulario es válido, guarda el usuario
             user = form.save()
+
+            # Asigna el grupo "user" automáticamente al nuevo usuario
+            user_group = Group.objects.get(name='user')
+            user.groups.add(user_group)
+
             username = form.cleaned_data.get('username')
             messages.success(request, f"Bienvenido {username}, tu cuenta ha sido creada exitosamente. Inicia sesión para continuar.")
             return redirect("security:auth_login")  # Redirige a la página de inicio de sesión
@@ -59,6 +65,7 @@ def signup(request):
             # Si hay errores en el formulario, muestra el formulario con los errores
             messages.error(request, "Error al registrar el usuario. Por favor, revisa los datos ingresados.")
             return render(request, "security/auth/signup.html", {"form": form, **data})
+        
 # ----------------- Iniciar Sesión -----------------
 def signin(request):
     data = {"title1": "IC - Login", "title2": "Inicio de Sesión"}
@@ -77,7 +84,7 @@ def signin(request):
                 login(request, user)
 
                 # Verifica si el usuario pertenece al grupo de administradores
-                if user.groups.filter(name='Administradores').exists():
+                if user.groups.filter(name='admin').exists():
                     return redirect("modulos")  # Redirige a los módulos de seguridad
                 else:
                     return redirect("levels")  # Redirige a los módulos de lecciones

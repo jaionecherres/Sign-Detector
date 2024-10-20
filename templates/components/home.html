@@ -3,202 +3,113 @@
 <title>{% block title %} {{ title1 }} {% endblock title %}</title>
 
 {% block content %}
-<style>
-    body {
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        height: auto; /* Cambio importante aquí para permitir scroll */
-        margin: 0;
-        display: flexzz;
-        flex-direction: column;
-    }
-
-    .main-containerhome2 {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        margin-top: 50px;
-        flex-wrap: wrap;
-    }
-
-    .cardhome2 {
-        width: 250px; 
-        text-align: center;
-        text-decoration: none;
-        color: #000;
-        transition: transform 0.3s, background-color 0.3s;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 15px;
-        padding: 20px; 
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .cardhome2:hover {
-        transform: scale(1.1);
-        background-color: rgba(255, 255, 255, 1);
-    }
-
-    .card-img {
-        width: 80%;
-        height: auto;
-    }
-
-    /* Fullscreen style for the selection section */
-    #selection-section {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5); 
-        backdrop-filter: blur(10px); 
-        padding: 20px;
-        z-index: 9999;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .informacion-debajo-carrusel {
-        background-color: #f9f9f9;
-        padding: 60px 0;
-        /* border: 2px solid red; */
-    }
-    
-    .informacion-debajo-carrusel h2 {
-        font-size: 2.5rem;
-        color: #333;
-    }
-    
-    .informacion-debajo-carrusel p {
-        font-size: 1.2rem;
-        color: #555;
-        line-height: 1.6;
-    }
-
-    /* Ajustes de altura para el carrusel */
-    .carousel-item {
-        height: 50vh; /* Reducir la altura del carrusel para asegurar espacio */
-    }
-
-    .carousel-item img {
-        object-fit: cover;
-        height: 100%; /* Asegura que las imágenes llenen la altura del carrusel */
-    }
-
-    .container-fluid + .informacion-debajo-carrusel {
-        margin-top: 50px;
-    }
-</style>
-
-
 <!-- SECCIÓN DEL HERO -->
 <section>
     {% if not user.is_superuser %}
-        <div class="container-fluid">
+        <div class="container-fluid mx-auto">
             <div class="row py-1">
                 <div class="col-lg-12 px-0">
-                    <nav class="navbar navbar-expand-lg navbar-light py-0">
-                        <div class="navbar-nav d-flex justify-content-between align-items-center w-100">
-                            <a class="nav-item nav-link flex-fill text-center" href="#">Información</a>
+                    <nav class="navbar navbar-expand-lg py-0">
+                        <div class="navbar-nav flex justify-between items-center w-full px-4">
+                            <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#" style="padding-left: 50px;">Información</a>
                             <div class="vr"></div>
-                            <a class="nav-item nav-link flex-fill text-center" href="#">Lenguaje de Señas</a>
+                            <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#">Lenguaje de Señas</a>
                             <div class="vr"></div>
-                            <a class="nav-item nav-link flex-fill text-center" href="#">Guía</a>
+                            <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#">Guía</a>
                             <div class="vr"></div>
-                            <a class="nav-item nav-link flex-fill text-center" href="#">IA</a>
-                        </div>
+                            <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#" style="padding-right: 50px;">IA</a>
+                        </div>                        
                     </nav>
                 </div>
             </div>
         </div>
-        
-        <div class="container-fluid p-0 pb-5 mb-5">
-            <div id="header-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
-                <ol class="carousel-indicators">
+
+        <!-- Carrusel -->
+        <div id="header-carousel" class="container-fluid p-0 pb-5 mb-5">
+            <div class="carousel slide carousel-fade relative h-96" data-bs-ride="carousel" data-bs-interval="3000">
+                <ol class="carousel-indicators absolute right-0 bottom-0 left-0 flex justify-center p-0 mb-4">
                     <li data-bs-target="#header-carousel" data-bs-slide-to="0" class="active"></li>
                     <li data-bs-target="#header-carousel" data-bs-slide-to="1"></li>
                     <li data-bs-target="#header-carousel" data-bs-slide-to="2"></li>
                 </ol>
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img class="d-block w-100" src="{% static 'img/inicio1.webp' %}">
-                        <div class="carousel-caption d-flex align-items-center justify-content-center">
-                            <div class="p-5 text-center" style="width: 100%; max-width: 900px;">
-                                <h5 class="text-white text-uppercase mb-md-3">Best Online Sign Language Course</h5>
-                                <h1 class="display-3 text-white mb-md-4">Best Education From Your Home</h1>
-                                <a href="javascript:void(0)" onclick="showSelection()" 
-                                   class="btn btn-primary py-md-3 px-md-5 font-weight-semi-bold mt-3 btn-lg">Empezar</a>
+                <div class="carousel-inner h-96">
+                    <div class="carousel-item active h-96">
+                        <img class="w-full h-full object-cover" src="{% static 'img/inicio1.webp' %}" alt="Primera imagen">
+                        <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
+                            <div class="p-5 text-center max-w-2xl">
+                                <h5 class="text-white uppercase mb-3">Best Online Sign Language Course</h5>
+                                <h1 class="text-white text-3xl md:text-5xl font-bold mb-4">Best Education From Your Home</h1>
+                                <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white;" class="py-2 px-4 rounded-lg mt-3">Empezar</a>
                             </div>
                         </div>
                     </div>
-                    <!-- Añadir más imágenes aquí -->
-                    <div class="carousel-item">
-                        <img class="d-block w-100" src="{% static 'img/lenguaje_senas.jpeg' %}">
-                        <div class="carousel-caption d-flex align-items-center justify-content-center">
-                            <div class="p-5 text-center" style="width: 100%; max-width: 900px;">
-                                <h5 class="text-white text-uppercase mb-md-3">Best Online Sign Language Course</h5>
-                                <h1 class="display-3 text-white mb-md-4">Best Education From Your Home</h1>
-                                <a href="javascript:void(0)" onclick="showSelection()" 
-                                   class="btn btn-primary py-md-3 px-md-5 font-weight-semi-bold mt-3 btn-lg">Empezar</a>
+                    <div class="carousel-item h-96">
+                        <img class="w-full h-full object-cover" src="{% static 'img/lenguaje_senas.jpg' %}" alt="Segunda imagen">
+                        <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
+                            <div class="p-5 text-center max-w-2xl">
+                                <h5 class="text-white uppercase mb-3">Best Online Sign Language Course</h5>
+                                <h1 class="text-white text-3xl md:text-5xl font-bold mb-4">Best Education From Your Home</h1>
+                                <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white;" class="py-2 px-4 rounded-lg mt-3">Empezar</a>
                             </div>
                         </div>
                     </div>
-                    <div class="carousel-item">
-                        <img class="d-block w-100" src="{% static 'img/lenguajeSeñas.jpeg' %}">
-                        <div class="carousel-caption d-flex align-items-center justify-content-center">
-                            <div class="p-5 text-center" style="width: 100%; max-width: 900px;">
-                                <h5 class="text-white text-uppercase mb-md-3">Best Online Sign Language Course</h5>
-                                <h1 class="display-3 text-white mb-md-4">Best Education From Your Home</h1>
-                                <a href="javascript:void(0)" onclick="showSelection()" 
-                                   class="btn btn-primary py-md-3 px-md-5 font-weight-semi-bold mt-3 btn-lg">Empezar</a>
+                    <div class="carousel-item h-96">
+                        <img class="w-full h-full object-cover" src="{% static 'img/lenguajeSeñas.png' %}" alt="Tercera imagen">
+                        <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
+                            <div class="p-5 text-center max-w-2xl">
+                                <h5 class="text-white uppercase mb-3">Best Online Sign Language Course</h5>
+                                <h1 class="text-white text-3xl md:text-5xl font-bold mb-4">Best Education From Your Home</h1>
+                                <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white;" class="py-2 px-4 rounded-lg mt-3">Empezar</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>        
-    {% endif %}
-</section>
-
-<!-- Fullscreen Selection Section -->
-<section id="selection-section" style="display: none;">
-    {% if not user.is_authenticated %}
-        <div class="container main-containerhome2">
-            <a href="{% url 'security:auth_login' %}" class="card cardhome2" id="admin-card"> 
-                <img src="{% static 'img/adminlogo.png' %}" alt="Administrador" class="card-img">
-                <p class="card-title">Administrador</p>
-            </a>
-            <a href="{% url 'security:auth_login' %}" class="card cardhome2" id="user-card">
-                <img src="{% static 'img/userlogo.png' %}" alt="Usuario" class="card-img">
-                <p class="card-title">Usuario</p>
-            </a>
-            <a href="{% url 'home' %}" class="card cardhome2" id="guest-card"> 
-                <img src="{% static 'img/invitadoicon.png' %}" alt="Invitado" class="card-img">
-                <p class="card-title">Invitado</p>
-            </a>
         </div>
     {% endif %}
 </section>
 
+<!-- Fullscreen Selection Section -->
+<section id="selection-section" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" style="backdrop-filter: blur(10px);">
+    {% if not user.is_authenticated %}
+        <div class="flex justify-center mt-10">
+            <a href="{% url 'security:auth_login' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 1cm; text-decoration: none;">
+                <div class="flex flex-col items-center justify-center h-full">
+                    <i class="fas fa-user-shield mb-4 text-8xl" style="color: #474747;"></i>
+                    <p class="text-xl font-semibold mt-3 text-black">Administrador</p>
+                </div>
+            </a>            
+            <a href="{% url 'security:auth_login' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 1cm; text-decoration: none;">
+                <div class="flex flex-col items-center justify-center h-full">
+                    <i class="fas fa-user mb-4 text-8xl" style="color: #474747;"></i>
+                    <p class="text-xl font-semibold mt-3 text-black">Usuario</p>
+                </div>
+            </a>
+            <a href="{% url 'home' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 0; text-decoration: none;">
+                <div class="flex flex-col items-center justify-center h-full">
+                    <i class="fa-solid fa-users mb-4 text-8xl" style="color: #474747;"></i>
+                    <p class="text-xl font-semibold mt-3 text-black">Invitado</p>
+                </div>
+            </a>            
+        </div>
+    {% endif %}
+</section>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
-<section>
-
-</section>
-
-<!-- Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function showSelection() {
-        // Ocultar el carrusel
+        // Ocultar el carrusel y la sección de información
         document.getElementById('header-carousel').style.display = 'none';
-        
+
         // Mostrar la sección de selección de usuarios
-        document.getElementById('selection-section').style.display = 'flex';
+        document.getElementById('selection-section').classList.remove('hidden');
     }
 </script>
+
 {% endblock %}
