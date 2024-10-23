@@ -15,6 +15,7 @@ class Nivel(models.Model):
     descripcion = models.TextField(verbose_name='Descripción', null=True, blank=True)
     orden = models.PositiveIntegerField(default=0, verbose_name='Orden') 
     imagen = models.ImageField(upload_to='niveles/', null=True, blank=True, verbose_name='Imagen')  
+    is_final = models.BooleanField(default=False, verbose_name="Es el nivel final") 
 
     def __str__(self):
         return self.name
@@ -55,6 +56,23 @@ class Progreso(models.Model):
         verbose_name = 'Progreso'
         verbose_name_plural = 'Progresos'
         ordering = ['usuario', 'nivel', 'leccion']
+    
+    def marcar_como_completado(self):
+        self.completado = True
+        self.fecha_completado = timezone.now()
+        self.save()
+    
+    def desbloquear_siguiente_nivel(self):
+        # Encuentra el siguiente nivel basado en el orden
+        nivel_actual = self.nivel
+        siguiente_nivel = Nivel.objects.filter(orden=nivel_actual.orden + 1).first()
+        if siguiente_nivel:
+            # Desbloquear el siguiente nivel creando un progreso para el siguiente nivel
+            Progreso.objects.get_or_create(
+                usuario=self.usuario,
+                nivel=siguiente_nivel,
+                defaults={'desbloqueado': True}
+            )
 
 
 class Senal(models.Model):
@@ -79,10 +97,24 @@ class Feedback(models.Model):
     leccion = models.ForeignKey(Leccion, on_delete=models.CASCADE)
     progreso = models.ForeignKey(Progreso, on_delete=models.CASCADE, null=True, blank=True) 
     intento_correcto = models.BooleanField(verbose_name='Intento Correcto', default=False)
-    fecha_intento = models.DateTimeField(verbose_name='Fecha de Intento', auto_now_add=True)
-    intentos_incorrectos = models.IntegerField(verbose_name='Intentos Incorrectos', default=0) 
     mensaje = models.TextField(verbose_name='Mensaje de Feedback', null=True, blank=True)
 
     def __str__(self):
         return f'Feedback - {self.usuario.username} - Lección: {self.leccion.name}'
+    
+    @staticmethod
+    def crear_feedback(usuario, nivel, leccion):
+        progreso = Progreso.objects.get(usuario=usuario, nivel=nivel)
+        if progreso.completado:
+            feedback, created = Feedback.objects.get_or_create(
+                usuario=usuario,
+                nivel=nivel,
+                leccion=leccion,
+                defaults={
+                    'mensaje': '¡Buen trabajo! Has completado la lección.',
+                    'intento_correcto': True
+                }
+            )
+            return feedback
+        return None
 

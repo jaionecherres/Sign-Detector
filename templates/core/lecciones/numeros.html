@@ -161,22 +161,35 @@
                     },
                     success: function(response) {
                         if (response.status === 'success') {
-                            mostrarMensajeExito();
+                            if (response.completado) {
+                                Swal.fire({
+                                    title: '¡Felicidades!',
+                                    text: response.mensaje,
+                                    icon: 'success',
+                                    confirmButtonText: 'Ir al siguiente nivel'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        //Redirigir al usuario a la pantalla de niveles
+                                        window.location.href = response.redirigir;
+                                    }
+                                });
+                            } else {
+                                mostrarMensajeExito();
 
-                            nextButton.onclick = function() {
-                                console.log('Número actualizado:', response.nuevo_numero); 
-                                console.log('URL de la nueva imagen:', response.nueva_imagen); 
-                            
-                                if (response.nueva_imagen) {
-                                    numeroActual.innerText = response.nuevo_numero;  //Actualiza el número
-                                    imagenNumero.src = response.nueva_imagen;  //Actualiza la imagen
-                                } else {
-                                    console.log("No se encontró una nueva imagen en la respuesta.");
-                                }
-                            
-                                successMessage.style.display = 'none'; 
-                            };                            
-                            
+                                nextButton.onclick = function() {
+                                    console.log('Número actualizado:', response.nuevo_numero); 
+                                    console.log('URL de la nueva imagen:', response.nueva_imagen); 
+                                
+                                    if (response.nueva_imagen) {
+                                        numeroActual.innerText = response.nuevo_numero;  //Actualiza el número
+                                        imagenNumero.src = response.nueva_imagen;  //Actualiza la imagen
+                                    } else {
+                                        console.log("No se encontró una nueva imagen en la respuesta.");
+                                    }
+                                
+                                    successMessage.style.display = 'none'; 
+                                };                            
+                            }
                         } else {
                             console.log('Seña incorrecta');
                         }

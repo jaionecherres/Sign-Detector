@@ -7,111 +7,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Enlace a Font Awesome -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>  
-        body {  
-            font-family: 'Arial', sans-serif;  
-            background-color: #F5F1DA;  
-            margin: 0;  
-            padding: 0;  
-            display: flex;  
-            flex-direction: column;  
-            align-items: center;  
-            justify-content: center; /* Centrar el contenido verticalmente */    
-            height: 100vh; /* Altura de la ventana para centrar verticalmente */  
-        }  
-
-        h1 {  
-            font-family: 'Courier New', Courier, monospace;  
-            color: #d69a6c;  
-            margin: 0;  
-        }  
-        .welcome {  
-            font-size: 24px;  
-            color: black;
-            margin: 20px 0;  /* Margen superior e inferior reducido */  
-            text-align: center;  
-            font-weight: bold;  
-        }  
-        .image-section {  
-            position: relative;  
-            width: 100%;  
-            height: 250px; /* Ajustar la altura de la imagen */  
-            overflow: hidden; /* Asegura que la imagen no desborde el contenedor */  
-        }  
-        .image-section img {  
-            width: 100%; /* Imagen ocupa todo el ancho de la página */  
-            height: 100%; /* La imagen ocupará toda la altura del contenedor */  
-            object-fit: cover; /* Asegura que la imagen se recorte y mantenga su proporción */  
-        }  
-        .description {  
-            position: absolute;  
-            top: 50%;  /* Ajusta la posición vertical al centro */  
-            right: 10%; /* Ajusta la posición horizontal */  
-            color: white;  
-            font-size: 24px;  /* Aumenta el tamaño de la fuente */  
-            transform: translateY(-50%); /* Centra verticalmente el texto */  
-            padding: 10px; /* Espaciado alrededor del texto */  
-            font-family: 'Roboto', sans-serif;
-        }  
-        .grid {  
-            display: flex;  
-            justify-content: center; /* Centrar las tarjetas horizontalmente */  
-            gap: 20px;  
-            width: 100%;  
-            max-width: 900px; /* Aumenta el ancho máximo para permitir tarjetas más grandes */  
-            margin: 20px auto;  /* Centramos el contenedor de las tarjetas */  
-            flex-wrap: wrap; /* Permite que las tarjetas se distribuyan en varias filas si es necesario */
-        }  
-        .card {  
-            background-color: #fff;  
-            border: 1px solid #ddd;  
-            border-radius: 10px;  
-            padding: 30px;  /* Aumentar el padding para hacer las tarjetas más grandes */  
-            text-align: center;  
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);  
-            display: flex;  
-            flex-direction: column;  
-            align-items: center;  
-            justify-content: center;  
-            transition: transform 0.2s;  
-            min-width: 150px; /* Asegura que las tarjetas tengan un ancho mínimo */  
-            height: 150px; /* Aumenta la altura de las tarjetas */  
-            color: black;
-        }  
-        .card:hover {  
-            transform: scale(1.05); /* Efecto de aumento al pasar el mouse */  
-        }  
-        .card i {  
-            font-size: 60px; /* Reduce el tamaño del icono */  
-            color: #d69a6c; /* Color del icono */  
-            margin-bottom: 15px; /* Aumenta el margen inferior para dar más espacio al texto */  
-            margin-top: 10px; /* Aumenta el margen superior para alejarlo del borde */  
-        }  
-    </style>  
 </head>  
-<body>  
+<body class="bg-[#F5F1DA] flex flex-col items-center justify-center font-sans min-h-screen">  
 
-<div class="welcome">Bienvenido {{ user.username }}</div>  
+    <div class="welcome text-2xl font-bold my-2 text-center" style="color: #44425A;font-family: 'Jomolhari', serif;">
+        Bienvenido {{ user.username }} <!-- Mostrar nombre del usuario -->
+    </div>  
 
-<div class="image-section">  
-    <img src="{% static 'img/admin.avif' %}" alt="Control Panel">  
-    <div class="description">{{ title2 }} - Control y administración integral del sistema en un solo lugar!</div>  
-</div>
+    <div class="relative w-full h-80">  
+        <img src="{% static 'img/admin.avif' %}" alt="Control Panel" class="w-full h-full object-cover">  
+        <div class="absolute inset-y-0 right-0 flex items-center text-white text-2xl p-4 bg-opacity-50 bg-black rounded-lg text-right max-w-md mr-10" >
+            Control y administración integral del sistema en un solo lugar!
+        </div>  
+    </div>  
 
-<!-- Menú de tarjetas dinámico -->
-{% for menu_wrapper in menu_list %}
-    <div class="grid">  
-        {% for group_modulo_permission in menu_wrapper.group_module_permission_list %}
-            <div class="card">  
-                <a href="{{ group_modulo_permission.module.url }}" style="text-decoration: none; color: inherit;">
-                    <i class="{{ group_modulo_permission.module.icon }} text-3xl text-purple-500"></i>  
-                    {{ group_modulo_permission.module.name }}  
+    <!-- Menú dinámico con permisos -->
+    {% for menu_wrapper in menu_list %}
+        <div class="flex justify-center space-x-0 w-full max-w-5xl my-10 mx-auto">  
+            {% for group_modulo_permission in menu_wrapper.group_module_permission_list %}
+                <a href="{{ group_modulo_permission.module.url }}" class="card bg-white border border-gray-300 rounded-lg p-6 text-center shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform w-48" style="text-decoration: none; height: 150px;">
+                    <i class="{{ group_modulo_permission.module.icon }} text-5xl" style="color: #E37E18;"></i>
+                    <p class="text-lg font-semibold mt-3" style="color: #474747; font-family: 'Jomolhari', serif;">
+                        {{ group_modulo_permission.module.name }}
+                    </p>
                 </a>
-            </div>  
-        {% endfor %}
-    </div> 
-{% endfor %}
-
+            {% endfor %}
+        </div>
+    {% endfor %}
+    
 </body>  
 </html>  
 {% endblock %}

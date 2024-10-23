@@ -1,0 +1,246 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
+{% load static %}
+{% block content %}
+
+<head>
+    <style>
+        /* Contenedor principal */
+        .dashboard-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Contenido principal: gráfico de área y gráfico de detalles */
+        .main-content {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;  /* Espacio entre los gráficos */
+            margin-top: 20px;
+        }
+
+        /* Sección de gráfico de área */
+        .area-chart-section {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-radius: 8px;
+            width: 50%;  /* Mitad del ancho */
+        }
+
+        /* Sección de detalles y gráfico (sin fondo ahora) */
+        .details-section {
+            padding: 20px;
+            border-radius: 8px;
+            width: 50%;  /* Mitad del ancho */
+        }
+
+        .details-section h4 {
+            margin-bottom: 20px;
+        }
+
+        .chart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Estilo para el gráfico */
+        .chart-legend {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .chart-legend li {
+            margin-bottom: 10px;
+            font-size: 1.2em;  /* Tamaño de letra reducido */
+            color: black;      /* Letra en color negro */
+        }
+
+        .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .purple {
+            background-color: purple;
+        }
+
+        .yellow {
+            background-color: yellow;
+        }
+
+        .blue {
+            background-color: blue;
+        }
+
+        /* Sección de niveles */
+        .levels-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .level-card {
+            padding: 20px;
+            border-radius: 8px;
+            width: calc(50% - 10px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-1 {
+            background-color: #A0A38A;
+        }
+
+        .level-2 {
+            background-color: #F1CBA3;
+        }
+
+        .level-3 {
+            background-color: #EAAD7D;
+        }
+
+        .level-finalizado {
+            background-color: #E37E18;
+        }
+
+        .level-card h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .level-card p {
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .level-card span {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<div class="dashboard-container">
+
+    <!-- Contenido del Dashboard (Gráfico de área y gráfico de detalles) -->
+    <div class="main-content">
+        <!-- Gráfico de área -->
+        <div class="area-chart-section">
+            <div id="area-chart" style="width: 100%;"></div> <!-- Contenedor del gráfico de área -->
+        </div>
+
+        <!-- Gráfico de detalles -->
+        <div class="details-section">
+            <h4>Detalles</h4>
+            <div class="chart">
+                <div id="donut-chart"></div> <!-- Contenedor del gráfico de dona -->
+                <ul class="chart-legend">
+                    <li><span class="dot purple"></span>Total de registrados: {{ totales_generales.total_registrados }}</li>
+                    <li><span class="dot yellow"></span>Total que terminaron el curso: {{ totales_generales.total_terminados }}</li>
+                    <li><span class="dot blue"></span>Total de los que están cursando: {{ totales_generales.total_cursando }}</li>
+                </ul>                
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalles de niveles y alumnos -->
+    <div class="levels-section">
+        {% for nivel in niveles_con_progreso %}
+        <div class="level-card {% if nivel.completado %} level-finalizado {% else %} level-{{ nivel.nivel.orden }} {% endif %}">
+            <h3>{{ nivel.nivel.name }}</h3>
+            <p>{{ nivel.alumnos_totales }}</p>
+            <span>Alumnos totales</span>
+        </div>
+        {% endfor %}
+    </div>
+    
+</div>
+
+<!-- Script para los gráficos de ApexCharts -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Gráfico de área (para los niveles)
+        var areaOptions = {
+            chart: {
+                type: 'area',
+                height: 350
+            },
+            series: [{
+                name: 'Alumnos',
+                data: [
+                    {% for nivel in niveles_con_progreso %}
+                    {{ nivel.alumnos_totales }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            }],
+            xaxis: {
+                categories: [
+                    {% for nivel in niveles_con_progreso %}
+                    '{{ nivel.nivel.name }}'{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            },
+            plotOptions: {
+                area: {
+                    fillOpacity: 0.5,
+                    stroke: {
+                        curve: 'smooth'
+                    }
+                }
+            },
+            colors: ['#29B6F6'],
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 200
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }]
+        };
+
+        var areaChart = new ApexCharts(document.querySelector("#area-chart"), areaOptions);
+        areaChart.render();
+
+        // Gráfico de dona (para los totales generales)
+        var donutOptions = {
+            chart: {
+                type: 'donut',
+                height: 350
+            },
+            series: [
+                {{ totales_generales.total_terminados }},
+                {{ totales_generales.total_cursando }},
+                {{ totales_generales.total_registrados }} - ({{ totales_generales.total_terminados }} + {{ totales_generales.total_cursando }})
+            ],
+            labels: ['Terminados', 'Cursando', 'Registrados'],
+            colors: ['#6A1B9A', '#FBC02D', '#29B6F6'],
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 200
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }]
+        };
+
+        var donutChart = new ApexCharts(document.querySelector("#donut-chart"), donutOptions);
+        donutChart.render();
+    });
+</script>
+
+{% endblock %}

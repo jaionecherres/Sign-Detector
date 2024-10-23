@@ -4,6 +4,7 @@
 
 {% block content %}
 <head>
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>home2</title>
@@ -16,47 +17,146 @@
             height: 100vh; /* Asegura que el fondo ocupe toda la pantalla */
             margin: 0; /* Elimina márgenes */
         }
+
+        /* Estilos para el contenedor principal de login */
+        .main-container-login {
+            @apply flex justify-center items-center h-[calc(100vh-100px)];
+        }
+
+        /* Estilos para la tarjeta de login */
+        .card-login {
+            @apply w-full max-w-md h-auto p-10 bg-white bg-opacity-20 backdrop-blur-lg border-2 border-white rounded-2xl flex flex-col justify-center items-start shadow-lg transition-transform duration-300;
+        }
+
+        /* Estilos para el título */
+        .card-login h1 {
+            @apply text-3xl font-bold text-white mb-6;
+        }
+
+        /* Estilos para los campos de entrada */
+        .input-group {
+            display: flex;
+            align-items: center; /* Alinea verticalmente íconos y texto */
+            position: relative;
+        }
+
+        .input-group input {
+            flex: 1; /* Para que el input ocupe el resto del espacio */
+            padding-left: 2.5rem; /* Da espacio suficiente para el ícono */
+            @apply w-full p-2.5 pl-10 mb-5 border-b-2 border-[#EAAD7D] rounded-none text-black bg-transparent shadow-none focus:outline-none focus:border-[#AB6E6C];
+        }
+
+        .icon-email,
+        .icon-lock {
+            font-size: 1.2rem; /* Tamaño del ícono */
+            margin-right: 10px; /* Espacio entre el ícono y el input */
+        }
+
+        .icon-email i,
+        .icon-lock i {
+            position: absolute;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: black;
+            font-size: 1rem; 
+        }
+
+        .icon-eye {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .icon-eye button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .icon-eye i {
+            font-size: 1.2rem; /* Tamaño del icono del ojo */
+            color: black;
+        }
+
+        /* Estilos para el texto "Olvidé mi contraseña" */
+        .forgot-password {
+            @apply block mb-5 text-[#EAAD7D] text-sm text-right cursor-pointer w-full;
+        }
+
+        .forgot-password:hover {
+            @apply underline;
+        }
+
+        /* Estilos para el botón */
+        .button {
+            @apply bg-gradient-to-r from-[#EAAD7D] to-[#AB6E6C] text-white py-3 rounded-lg cursor-pointer w-full text-lg mt-5; /* Ancho completo */
+            margin-top: 20px; /* Espacio superior para separar de otros elementos */
+        }
+
+        .button:hover {
+            @apply bg-[#AB6E6C];
+        }
+
+        /* Estilos para el texto de registro */
+        .registration-text {
+            @apply flex justify-between w-full mt-4;
+        }
+
+        .not-registered {
+            @apply text-[#D9D9D9];
+        }
+
+        .register {
+            @apply text-white cursor-pointer;
+        }
+
+        .register:hover {
+            @apply underline;
+        }
     </style>
 </head>
 
 <section class="bodylogin hide-buttons">
     <div class="main-container-login">
-        <div class="card-login">
-            <h1>Login</h1>
+        <div class="card-login" style="padding: 60px; width: 900px; margin: 0 auto"> <!-- Ajustar el ancho -->
+            <h1 class="text-3xl font-bold text-black mb-6 text-left">Login</h1> <!-- Alineado a la izquierda -->
             <form method="POST">
                 {% csrf_token %}
                 
                 <!-- Campo para el usuario -->
-                <label for="{{ form.username.id_for_label }}" class="dark:text-green-300 font-black uppercase text-lg z-20">{{ form.username.label }}</label>
+                <label for="{{ form.username.id_for_label }}" class="dark:text-orange-300 font-black uppercase text-lg z-20">{{ form.username.label }}</label>
                 <div class="input-group">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 top-6">
-                        <i class="text-green-400 dark:text-green-300 fa-solid fa-user"></i>
+                    <span class="icon-email">
+                        <i class="fa-solid fa-envelope"></i>
                     </span>
-                    <input type="text"
-                        class="pl-10 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-green-500 dark:focus:border-green-500 dark:shadow-sm-light"
-                        id="id_username" name="username">
+                    <input type="email"
+                        class="pl-10 shadow-sm bg-transparent border-b-2 border-orange-300 text-gray-900 rounded-lg focus:ring-green-500 focus:border-orange-500 block w-full p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-orange-400 dark:text-gray-400 dark:focus:ring-orange-500 dark:focus:border-orange-500"
+                        id="id_username" name="username" placeholder="Email" style="width: 370px;">
                 </div>
                 
                 <!-- Campo para la contraseña -->
                 <label for="{{ form.password.id_for_label }}" class="dark:text-green-300 font-black uppercase text-lg z-20">{{ form.password.label }}</label>
                 <div class="input-group">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 top-6">
-                        <i class="text-green-400 dark:text-green-300 fa-solid fa-lock"></i>
+                    <span class="icon-lock">
+                        <i class="fa-solid fa-lock"></i>
                     </span>
                     <input type="password"
-                        class="pl-10 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-green-500 dark:focus:border-green-500 dark:shadow-sm-light"
-                        id="id_password" name="password">
-                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
-                        <button class="btn btn-outline-secondary p-2" type="button" id="togglePassword">
+                        class="pl-10 shadow-sm bg-transparent border-b-2 border-gray-300 text-gray-900 rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-green-500 dark:focus:border-green-500"
+                        id="id_password" name="password" placeholder="Contraseña" style="width: 370px">
+                    <span class="icon-eye">
+                        <button class="btn btn-outline-secondary p-2" type="button" id="togglePassword" aria-label="Mostrar/Ocultar contraseña">
                             <i class="fas fa-eye"></i>
                         </button>
+                    </span>
                 </div>
                 
                 <!-- Enlace de olvido de contraseña -->
                 <span class="forgot-password">
-                    <a href="" class="text-green-600 hover:underline dark:text-green-300 font-Tiny5 uppercase">¿Olvidé mi contraseña?</a>
+                    <a href="" class="text-white hover:underline dark:text-orange-500 font-Tiny5 uppercase">¿Olvidé mi contraseña?</a>
                 </span>
-
+                
                 <!-- Botón de inicio de sesión -->
                 <button type="submit" class="button">Login</button>
             </form>
@@ -70,21 +170,49 @@
 </section>
 
 <script>
-    document.getElementById("togglePassword").addEventListener("click", function () {
+    document.addEventListener("DOMContentLoaded", function() {
+        var usernameInput = document.getElementById("id_username");
         var passwordInput = document.getElementById("id_password");
-        var icon = this.querySelector("i");
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            icon.classList.remove("fa-eye");
-            icon.classList.add("fa-eye-slash");
-        } else {
-            passwordInput.type = "password";
-            icon.classList.remove("fa-eye-slash");
-            icon.classList.add("fa-eye");
+
+        // Función para verificar si el input está vacío y aplicar el fondo correspondiente
+        function handleInputChange(input) {
+            if (input.value === "") {
+                input.classList.remove("bg-white");
+                input.classList.add("bg-transparent");
+            } else {
+                input.classList.remove("bg-transparent");
+                input.classList.add("bg-white");
+            }
         }
+
+        // Añadir evento input a ambos campos
+        usernameInput.addEventListener("input", function() {
+            handleInputChange(usernameInput);
+        });
+
+        passwordInput.addEventListener("input", function() {
+            handleInputChange(passwordInput);
+        });
+
+        // Ejecutar la función una vez al cargar la página para aplicar estilos iniciales
+        handleInputChange(usernameInput);
+        handleInputChange(passwordInput);
+
+        // Funcionalidad para mostrar/ocultar la contraseña
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            var icon = this.querySelector("i");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        });
     });
 </script>
 
 {% endblock %}
-{% block navbar %}
-{% endblock navbar %}
+{% block navbar %}{% endblock navbar %}

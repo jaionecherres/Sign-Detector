@@ -8,7 +8,6 @@ from django.db.models import Q
 from app.security.forms.auth import CustomUserCreationForm, CustomUserUpdateForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.models import Group
 
 # ----------------- Perfil -----------------
 def profile(request):
@@ -40,7 +39,10 @@ def signout(request):
     logout(request)
     return redirect("home")
 
-# ----------------- Registro ----------------
+# ----------------- Registro -----------------
+# ----------------- Registro -----------------
+from django.contrib.auth.models import Group
+
 def signup(request):
     data = {"title1": "IC - Registro", "title2": "Registro de Usuarios"}
     
@@ -55,7 +57,7 @@ def signup(request):
             user = form.save()
 
             # Asigna el grupo "user" automáticamente al nuevo usuario
-            user_group = Group.objects.get(name='user')
+            user_group = Group.objects.get(name='User')
             user.groups.add(user_group)
 
             username = form.cleaned_data.get('username')
@@ -65,7 +67,7 @@ def signup(request):
             # Si hay errores en el formulario, muestra el formulario con los errores
             messages.error(request, "Error al registrar el usuario. Por favor, revisa los datos ingresados.")
             return render(request, "security/auth/signup.html", {"form": form, **data})
-        
+
 # ----------------- Iniciar Sesión -----------------
 def signin(request):
     data = {"title1": "IC - Login", "title2": "Inicio de Sesión"}
@@ -84,7 +86,7 @@ def signin(request):
                 login(request, user)
 
                 # Verifica si el usuario pertenece al grupo de administradores
-                if user.groups.filter(name='admin').exists():
+                if user.groups.filter(name='Administradores').exists():
                     return redirect("modulos")  # Redirige a los módulos de seguridad
                 else:
                     return redirect("levels")  # Redirige a los módulos de lecciones

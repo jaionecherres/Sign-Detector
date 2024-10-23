@@ -11,4 +11,5 @@ urlpatterns = [
     path('detectar_senal/', views.detectar_senal, name='detectar_senal'),  
     path('alfabeto/', views.alfabeto, name='alfabeto'),
     path('numeros/', views.numeros, name='numeros'),
+    path('feedback/<int:nivel_id>/', views.feedback_nivel, name='feedback_nivel'),
 ]

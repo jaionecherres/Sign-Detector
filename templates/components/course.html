@@ -44,15 +44,15 @@
                         </div>
                         {% endif %}
                         
-                        <!-- Link de feedback (se puede ajustar si es para niveles desbloqueados o no) -->
-                        {% if item.desbloqueado %}
-                        <a class="text-sm block mt-2" href="#">
-                            <u>Feedback</u> <i class="fa fa-unlock ml-1"></i>
-                        </a>
+                        <!-- Verificar si el feedback debe estar desbloqueado -->
+                        {% if item.completado %}
+                            <a class="text-sm block mt-2" href="{% url 'core:feedback_nivel' item.nivel.id %}">
+                                <u>Realizar Feedback</u> <i class="fa fa-unlock ml-1"></i>
+                            </a>
                         {% else %}
-                        <a class="text-sm block mt-2" href="#">
-                            <u>Feedback</u> <i class="fa fa-lock ml-1"></i>
-                        </a>
+                            <span class="text-sm block mt-2 text-gray-500">
+                                <u>Feedback</u> <i class="fa fa-lock ml-1"></i>
+                            </span>
                         {% endif %}
                     </div>
                 </div>

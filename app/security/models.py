@@ -184,7 +184,7 @@ class User(AbstractUser):
         if self.image:
             return self.image.url
         else:
-            return '/static/img/usuario_anonimo.png'
+            return '/static/img/perfil_random.jpeg'
 
 
 class Dashboard(models.Model):
@@ -200,14 +200,14 @@ class Dashboard(models.Model):
         # Total de usuarios registrados
         total_registrados = User.objects.count()
 
-        # Total de usuarios que han completado el curso
+        # Total de usuarios que han completado el curso (niveles con is_final=True)
         total_terminados = Progreso.objects.filter(nivel__is_final=True, completado=True).values('usuario').distinct().count()
 
         # Total de usuarios que están cursando (han comenzado pero no han terminado)
         total_cursando = User.objects.filter(progreso__completado=False).distinct().count()
 
         # Número de alumnos por nivel
-        alumnos_por_nivel = Progreso.objects.values('nivel__nombre').annotate(total_alumnos=Count('usuario', distinct=True))
+        alumnos_por_nivel = Progreso.objects.values('nivel__name').annotate(total_alumnos=Count('usuario', distinct=True))
 
         return {
             'total_registrados': total_registrados,

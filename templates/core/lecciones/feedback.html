@@ -1,0 +1,39 @@
+{% extends 'components/base.html' %}
+{% load static %}
+<title>{% block title %} {{ title1 }} {% endblock title %}</title>
+{% block content %}
+
+<div class="container-fluid py-30">
+    <div class="container py-10">
+        <div class="text-center mb-2">
+            <h5 class="text-primary text-uppercase mb-1" style="letter-spacing: 2px;">Feedback de Niveles</h5>
+            <h1 class="text-2xl">Consulta tus Feedbacks</h1>
+        </div>
+        <div class="row justify-content-center">
+            {% for item in niveles_con_feedback %}
+            <div class="col-lg-5 col-md-6 mb-4">
+                <div class="rounded overflow-hidden shadow-lg bg-white" style="height: 300px;">
+                    <div class="p-4 bg-gray-100">
+                        <div class="flex justify-between mb-3">
+                            <small class="text-gray-600">
+                                <i class="fa fa-users text-primary mr-2"></i>Nivel {{ item.nivel.orden }}
+                            </small>
+                        </div>
+
+                        {% if item.feedback_disponible %}
+                            <a class="text-sm block mt-2" href="{% url 'core:feedback_nivel' item.nivel.id %}">
+                                <u>Ver Feedback</u> <i class="fa fa-unlock ml-1"></i>
+                            </a>
+                        {% else %}
+                            <span class="text-sm block mt-2 text-gray-500">
+                                <u>Feedback bloqueado</u> <i class="fa fa-lock ml-1"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

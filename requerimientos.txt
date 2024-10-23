@@ -50,3 +50,6 @@ typing-extensions==4.12.2
 tzdata==2024.1
 urllib3==2.2.1
 wcwidth==0.2.13
+numpy
+opencv-python
+scikit-learn==1.5.1

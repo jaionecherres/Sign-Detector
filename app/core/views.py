@@ -1,10 +1,12 @@
 from django.http import StreamingHttpResponse, JsonResponse
 from django.views.generic import DetailView
-from django.shortcuts import render
-from .models import Leccion, Senal, Progreso, Nivel
+from django.shortcuts import redirect, render
+from .models import *
 from django.utils.timezone import now
 from app.security.models import Dashboard
 from .recognition import inference_classifier2 
+from django.shortcuts import get_object_or_404
+from django.urls import reverse  # Importa reverse para construir URLs dinámicamente
 import cv2
 import time
 import logging
@@ -172,10 +174,40 @@ class LeccionDetailView(DetailView):
             return ['core/lecciones/detail.html']  # Plantilla predeterminada 
 
 
+def feedback_nivel(request, nivel_id):
+    nivel = get_object_or_404(Nivel, id=nivel_id)
+    usuario = request.user
+
+    # Verificar si el nivel fue completado para permitir el acceso al feedback
+    progreso = Progreso.objects.filter(usuario=usuario, nivel=nivel).first()
+
+    if not progreso or not progreso.completado:
+        # Si el nivel no está completado, bloquear el acceso al feedback
+        return JsonResponse({'status': 'error', 'mensaje': 'Debes completar el nivel antes de acceder al feedback.'})
+
+    # Obtener el feedback si existe
+    feedback = Feedback.objects.filter(usuario=usuario, nivel=nivel).first()
+
+    return render(request, 'core/lecciones/feedback.html', {'feedback': feedback, 'nivel': nivel})
+
+
 #***********************Vista específica para manejar la lección de alfabeto***********************
+
 def alfabeto(request):
     abecedario = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    letra_actual = request.session.get('letra_actual', 'Y')  # Inicializa la letra con 'A' si no está en sesión
+    letra_actual = request.session.get('letra_actual', 'Y')
+
+    alfabeto = Nivel.objects.get(orden=1)
+    progreso, creado = Progreso.objects.get_or_create(usuario=request.user, nivel=alfabeto)
+
+    # Verificar si el usuario ya completó el nivel
+    if progreso.completado:
+        # Redirigir al feedback si el nivel ya está completado
+        return JsonResponse({
+            'status': 'completado',
+            'mensaje': 'Ya completaste el Nivel 1. Puedes dirigirte al feedback.',
+            'redirigir': '/feedback/'
+        })
 
     try:
         senal_inicial = Senal.objects.get(name=letra_actual)
@@ -185,11 +217,9 @@ def alfabeto(request):
         senal_detectada = None
         logger.error(f"No se encontró imagen para la letra {letra_actual}")
 
-    #Asegurar de que estás pasando 'senal_detectada' y 'letra_actual' correctamente
     if request.method == 'GET':
-        return render(request, 'alfabeto.html', {'senal_detectada': senal_detectada, 'letra_actual': letra_actual})
+        return render(request, 'alfabeto.html', {'senal_detectada': senal_detectada, 'letra_actual': letra_actual, 'progreso': progreso})
 
-    #Lógica para manejar peticiones AJAX
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         senal_realizada = request.POST.get('senal_realizada')
         logger.info(f"Seña realizada: {senal_realizada}, letra actual: {letra_actual}")
@@ -197,68 +227,54 @@ def alfabeto(request):
         if senal_realizada == letra_actual:
             indice_actual = abecedario.index(letra_actual)
 
-            try:
-                alfabeto = Nivel.objects.get(orden=1)
+            if letra_actual == 'Z':
+                # Marcar el progreso del nivel como completado
+                progreso.completado = True
+                progreso.fecha_completado = now()
+                progreso.save()
 
-                if letra_actual == 'Z':
-                    #Marcar que el Nivel 1 ha sido completado
-                    progreso, creado = Progreso.objects.get_or_create(usuario=request.user, nivel=alfabeto)
-                    progreso.completado = True
-                    progreso.fecha_completado = now()
-                    progreso.save()
-
-                    # Desbloquear el siguiente nivel
-                    try:
-                        siguiente_nivel = Nivel.objects.get(orden=alfabeto.orden + 1)
-                        #Asegurar de que el siguiente nivel tenga una lección válida
-                        primera_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
-                        if not primera_leccion_siguiente_nivel:
-                            return JsonResponse({
-                                'status': 'error',
-                                'mensaje': 'El siguiente nivel no tiene una lección asociada.'
-                            })
-                        
-                        Progreso.objects.get_or_create(
-                            usuario=request.user, 
-                            nivel=siguiente_nivel, 
-                            defaults={'desbloqueado': True, 'leccion': primera_leccion_siguiente_nivel}
-                        )
-                    except Nivel.DoesNotExist:
+                # Desbloquear el siguiente nivel
+                try:
+                    siguiente_nivel = Nivel.objects.get(orden=alfabeto.orden + 1)
+                    primera_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
+                    if not primera_leccion_siguiente_nivel:
                         return JsonResponse({
                             'status': 'error',
-                            'mensaje': 'No se pudo encontrar el siguiente nivel.'
+                            'mensaje': 'El siguiente nivel no tiene una lección asociada.'
                         })
 
-                    #Actualizar el dashboard del usuario
-                    try:
-                        dashboard, created = Dashboard.objects.get_or_create(usuario=request.user)
-                        dashboard.nivel_actual = siguiente_nivel  #Actualizar al siguiente nivel
-                        dashboard.actualizar_dashboard()
-                    except Exception as e:
-                        return JsonResponse({
-                            'status': 'error',
-                            'mensaje': f'Error al actualizar el dashboard: {str(e)}'
-                        })
-
+                    Progreso.objects.get_or_create(
+                        usuario=request.user,
+                        nivel=siguiente_nivel,
+                        defaults={'desbloqueado': True, 'leccion': primera_leccion_siguiente_nivel}
+                    )
+                except Nivel.DoesNotExist:
                     return JsonResponse({
-                        'status': 'success',
-                        'mensaje': '¡Felicidades! Ha completado el Nivel 1. ¡Prepárese para el siguiente nivel!',
-                        'completado': True,
-                        'redirigir': '/levels/'
+                        'status': 'error',
+                        'mensaje': 'No se pudo encontrar el siguiente nivel.'
                     })
-            except Exception as e:
-                # Capturar la traza completa del error
-                error_trace = traceback.format_exc()
+
+                # Actualizar el dashboard del usuario
+                try:
+                    dashboard, created = Dashboard.objects.get_or_create(usuario=request.user)
+                    dashboard.nivel_actual = siguiente_nivel
+                    dashboard.actualizar_dashboard()
+                except Exception as e:
+                    return JsonResponse({
+                        'status': 'error',
+                        'mensaje': f'Error al actualizar el dashboard: {str(e)}'
+                    })
+
+                # Redirigir a la página de niveles donde se mostrará el feedback desbloqueado
                 return JsonResponse({
-                    'status': 'error',
-                    'mensaje': f'Ocurrió un error inesperado: {str(e)}',
-                    'detalles': error_trace  
+                    'status': 'success',
+                    'mensaje': '¡Felicidades! Ha completado el Nivel 1. ¡Prepárese para el siguiente nivel!',
+                    'completado': True,
+                    'redirigir': '/levels/'  # Redirigir al listado de niveles
                 })
 
-            #Si no es la última letra, avanzar a la siguiente letra
             if indice_actual < len(abecedario) - 1:
                 letra_actual = abecedario[indice_actual + 1]
-
             request.session['letra_actual'] = letra_actual
 
             try:
@@ -279,11 +295,13 @@ def alfabeto(request):
 
         return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
 
-
 #*************************Vista específica para manejar la lección de números*************************
 def numeros(request):
     lista_numeros = list(range(10))
-    numero_actual = request.session.get('numero_actual', 0)
+    numero_actual = request.session.get('numero_actual', 8)
+    
+    numeros = Nivel.objects.get(orden=2)
+    progreso = Progreso.objects.filter(usuario=request.user, nivel=numeros).first()
 
     try:
         senal_inicial = Senal.objects.get(name=str(numero_actual))
@@ -301,7 +319,52 @@ def numeros(request):
         logger.info(f"Seña realizada: {senal_realizada} (tipo: {type(senal_realizada)}), número actual: {numero_actual} (str: {str(numero_actual)}, tipo: {type(numero_actual)})")
 
         if str(senal_realizada).strip() == str(numero_actual).strip():
-            logger.info(f"¡Número {numero_actual} detectado correctamente!")
+            
+            if numero_actual == 9:
+                progreso, creado = Progreso.objects.get_or_create(usuario=request.user, nivel=numeros)
+                progreso.completado = True
+                progreso.fecha_completado = now()
+                progreso.save()
+
+                # Desbloquear el siguiente nivel
+                try:
+                    siguiente_nivel = Nivel.objects.get(orden=numeros.orden + 1)
+                    segunda_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
+                    if not segunda_leccion_siguiente_nivel:
+                        return JsonResponse({
+                            'status': 'error',
+                            'mensaje': 'El siguiente nivel no tiene una lección asociada.'
+                        })
+
+                    Progreso.objects.get_or_create(
+                        usuario=request.user,
+                        nivel=siguiente_nivel,
+                        defaults={'desbloqueado': True, 'leccion': segunda_leccion_siguiente_nivel}
+                    )
+                except Nivel.DoesNotExist:
+                    return JsonResponse({
+                        'status': 'error',
+                        'mensaje': 'No se pudo encontrar el siguiente nivel.'
+                    })
+
+                # Actualizar el dashboard del usuario
+                try:
+                    dashboard, created = Dashboard.objects.get_or_create(usuario=request.user)
+                    dashboard.nivel_actual = siguiente_nivel
+                    dashboard.actualizar_dashboard()
+                except Exception as e:
+                    return JsonResponse({
+                        'status': 'error',
+                        'mensaje': f'Error al actualizar el dashboard: {str(e)}'
+                    })
+
+                return JsonResponse({
+                    'status': 'success',
+                    'mensaje': '¡Felicidades! Ha completado el Nivel 2. ¡Prepárese para el siguiente nivel!',
+                    'completado': True,
+                    'redirigir': '/levels/'
+                })
+                
             try:
                 indice_actual = lista_numeros.index(int(numero_actual))
                 if indice_actual < len(lista_numeros) - 1:

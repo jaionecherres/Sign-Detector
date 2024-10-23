@@ -1,5 +1,5 @@
 from django.urls import path
-from app.security.views import auth, module, menu, groupmodulepermission
+from app.security.views import auth, module, menu, groupmodulepermission, dashboard
 
 app_name='security'
 urlpatterns = [    
@@ -25,5 +25,7 @@ urlpatterns = [
     path('groupmodulepermission_delete/<int:pk>/', groupmodulepermission.GroupModulePermissionDeleteView.as_view(), name='groupmodulepermission_delete'),
     path('get_module_permissions/<int:module_id>/', groupmodulepermission.get_module_permissions, name='get_module_permissions'),
     path('get_group_permissions/<int:group_id>/', groupmodulepermission.GroupModulePermissionCreateView.get_group_permissions, name='get_group_permissions'),
+    
+    path('dashboard_list/', dashboard.DashboardTemplateView.as_view(), name='dashboard_list'),
 ]
     
