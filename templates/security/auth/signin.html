@@ -1,218 +1,93 @@
 {% extends 'components/base.html' %}
 {% block title %}{{ title1 }}{% endblock %}
 {% load static %}
+{% load static tailwind_tags %}
+
+<!-- Tailwind CSS -->
+{% tailwind_css %}
 
 {% block content %}
-<head>
-    <link href="{% static 'css/output.css' %}" rel="stylesheet">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>home2</title>
-    <style>
-        body {
-            background-image: url('{% static "img/fondohome2.jpeg" %}');
-            background-size: cover; /* Asegura que la imagen cubra todo el fondo */
-            background-position: center; /* Centra la imagen */
-            background-repeat: no-repeat; /* Evita que la imagen se repita */
-            height: 100vh; /* Asegura que el fondo ocupe toda la pantalla */
-            margin: 0; /* Elimina márgenes */
-        }
+<body class="text-secondary loading text-items font-Quicksand text-lg font-light" style="margin: 0; padding: 0; background-color: #F5F1DA; background-image: url('{% static "img/fondohome2.jpeg" %}'); background-size: cover; background-attachment: fixed;">
+    <!-- Sección principal con Tailwind y fondo de imagen ajustado -->
+    <section class="flex justify-center items-center h-screen bg-cover bg-center">
+        <!-- Se añadió mt-[-50px] para subir el recuadro -->
+        <div class="w-full max-w-[400px] p-8 bg-transparent border border-white rounded-lg backdrop-blur-md flex flex-col justify-center items-center mt-[-50px]" style="min-height: 550px;">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-10" style="color: black; font-family: 'Jomolhari', serif">Login</h1>
 
-        /* Estilos para el contenedor principal de login */
-        .main-container-login {
-            @apply flex justify-center items-center h-[calc(100vh-100px)];
-        }
-
-        /* Estilos para la tarjeta de login */
-        .card-login {
-            @apply w-full max-w-md h-auto p-10 bg-white bg-opacity-20 backdrop-blur-lg border-2 border-white rounded-2xl flex flex-col justify-center items-start shadow-lg transition-transform duration-300;
-        }
-
-        /* Estilos para el título */
-        .card-login h1 {
-            @apply text-3xl font-bold text-white mb-6;
-        }
-
-        /* Estilos para los campos de entrada */
-        .input-group {
-            display: flex;
-            align-items: center; /* Alinea verticalmente íconos y texto */
-            position: relative;
-        }
-
-        .input-group input {
-            flex: 1; /* Para que el input ocupe el resto del espacio */
-            padding-left: 2.5rem; /* Da espacio suficiente para el ícono */
-            @apply w-full p-2.5 pl-10 mb-5 border-b-2 border-[#EAAD7D] rounded-none text-black bg-transparent shadow-none focus:outline-none focus:border-[#AB6E6C];
-        }
-
-        .icon-email,
-        .icon-lock {
-            font-size: 1.2rem; /* Tamaño del ícono */
-            margin-right: 10px; /* Espacio entre el ícono y el input */
-        }
-
-        .icon-email i,
-        .icon-lock i {
-            position: absolute;
-            left: 3px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: black;
-            font-size: 1rem; 
-        }
-
-        .icon-eye {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .icon-eye button {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-        }
-
-        .icon-eye i {
-            font-size: 1.2rem; /* Tamaño del icono del ojo */
-            color: black;
-        }
-
-        /* Estilos para el texto "Olvidé mi contraseña" */
-        .forgot-password {
-            @apply block mb-5 text-[#EAAD7D] text-sm text-right cursor-pointer w-full;
-        }
-
-        .forgot-password:hover {
-            @apply underline;
-        }
-
-        /* Estilos para el botón */
-        .button {
-            @apply bg-gradient-to-r from-[#EAAD7D] to-[#AB6E6C] text-white py-3 rounded-lg cursor-pointer w-full text-lg mt-5; /* Ancho completo */
-            margin-top: 20px; /* Espacio superior para separar de otros elementos */
-        }
-
-        .button:hover {
-            @apply bg-[#AB6E6C];
-        }
-
-        /* Estilos para el texto de registro */
-        .registration-text {
-            @apply flex justify-between w-full mt-4;
-        }
-
-        .not-registered {
-            @apply text-[#D9D9D9];
-        }
-
-        .register {
-            @apply text-white cursor-pointer;
-        }
-
-        .register:hover {
-            @apply underline;
-        }
-    </style>
-</head>
-
-<section class="bodylogin hide-buttons">
-    <div class="main-container-login">
-        <div class="card-login" style="padding: 60px; width: 900px; margin: 0 auto"> <!-- Ajustar el ancho -->
-            <h1 class="text-3xl font-bold text-black mb-6 text-left">Login</h1> <!-- Alineado a la izquierda -->
-            <form method="POST">
+            <form method="POST" class="w-full">
                 {% csrf_token %}
-                
-                <!-- Campo para el usuario -->
-                <label for="{{ form.username.id_for_label }}" class="dark:text-orange-300 font-black uppercase text-lg z-20">{{ form.username.label }}</label>
-                <div class="input-group">
-                    <span class="icon-email">
-                        <i class="fa-solid fa-envelope"></i>
-                    </span>
-                    <input type="email"
-                        class="pl-10 shadow-sm bg-transparent border-b-2 border-orange-300 text-gray-900 rounded-lg focus:ring-green-500 focus:border-orange-500 block w-full p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-orange-400 dark:text-gray-400 dark:focus:ring-orange-500 dark:focus:border-orange-500"
-                        id="id_username" name="username" placeholder="Email" style="width: 370px;">
-                </div>
-                
-                <!-- Campo para la contraseña -->
-                <label for="{{ form.password.id_for_label }}" class="dark:text-green-300 font-black uppercase text-lg z-20">{{ form.password.label }}</label>
-                <div class="input-group">
-                    <span class="icon-lock">
-                        <i class="fa-solid fa-lock"></i>
-                    </span>
-                    <input type="password"
-                        class="pl-10 shadow-sm bg-transparent border-b-2 border-gray-300 text-gray-900 rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 pr-12 dark:bg-principal dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-green-500 dark:focus:border-green-500"
-                        id="id_password" name="password" placeholder="Contraseña" style="width: 370px">
-                    <span class="icon-eye">
-                        <button class="btn btn-outline-secondary p-2" type="button" id="togglePassword" aria-label="Mostrar/Ocultar contraseña">
-                            <i class="fas fa-eye"></i>
-                        </button>
+
+                <!-- Campo de usuario -->
+                <div class="mb-4 relative">
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-500">{{ form.username.label }}</label>
+                    <input type="text" name="username" id="id_username"
+                        class="pr-4 py-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 bg-transparent text-gray-500 placeholder-gray-500"
+                        placeholder="Email" style="text-indent: 2.5rem;">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="top: 50%;">
+                        <i class="fas fa-user" style="color: black;"></i>
                     </span>
                 </div>
-                
+
+                <!-- Campo de contraseña -->
+                <div class="mb-4 relative">
+                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-500">{{ form.password.label }}</label>
+                    <input type="password" name="password" id="id_password"
+                        class="pr-4 py-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 bg-transparent text-gray-500 placeholder-gray-500"
+                        placeholder="Contraseña" style="text-indent: 2.5rem; width: 335px;">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="top: 75%; transform: translateY(-50%);">
+                        <i class="fas fa-lock" style="color: black;"></i>
+                    </span>
+                    <a href="javascript:void(0)" id="togglePassword" class="absolute right-0 pr-3 flex items-center" style="top: 75%; transform: translateY(-50%);">
+                        <i id="eyeIcon" class="fas fa-eye" style="color: black;"></i>
+                    </a>
+                </div>
+
                 <!-- Enlace de olvido de contraseña -->
-                <span class="forgot-password">
-                    <a href="" class="text-white hover:underline dark:text-orange-500 font-Tiny5 uppercase">¿Olvidé mi contraseña?</a>
-                </span>
-                
+                <div class="mb-4 text-right">
+                    <a href="#" class="text-white hover:underline text-sm">¿Olvidé mi contraseña?</a>
+                </div>
+
                 <!-- Botón de inicio de sesión -->
-                <button type="submit" class="button">Login</button>
+                <div class="flex justify-center mt-2">
+                    <button type="submit" class="text-white py-2 px-4 rounded-md shadow-md w-full flex items-center justify-center"
+                        style="background-image: url('{% static "img/login_boton.jpg" %}'); background-size: cover; background-position: center;">
+                        Login
+                    </button>
+                </div>
             </form>
-            
-            <div class="registration-text">
-                <span class="not-registered">¿No estoy registrado?</span>
-                <a href="{% url 'security:auth_signup' %}" class="register">Regístrate</a> 
+
+            <!-- Texto de registro -->
+            <div class="text-center mt-4">
+                <p class="text-sm text-white">¿No estoy registrado? <a href="{% url 'security:auth_signup' %}" class="text-orange-500 hover:underline">Regístrate</a></p>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var usernameInput = document.getElementById("id_username");
-        var passwordInput = document.getElementById("id_password");
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('id_password');
+        const eyeIcon = document.getElementById('eyeIcon');
 
-        // Función para verificar si el input está vacío y aplicar el fondo correspondiente
-        function handleInputChange(input) {
-            if (input.value === "") {
-                input.classList.remove("bg-white");
-                input.classList.add("bg-transparent");
+        togglePassword.addEventListener('click', function () {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+
+            if (type === 'text') {
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
             } else {
-                input.classList.remove("bg-transparent");
-                input.classList.add("bg-white");
-            }
-        }
-
-        // Añadir evento input a ambos campos
-        usernameInput.addEventListener("input", function() {
-            handleInputChange(usernameInput);
-        });
-
-        passwordInput.addEventListener("input", function() {
-            handleInputChange(passwordInput);
-        });
-
-        // Ejecutar la función una vez al cargar la página para aplicar estilos iniciales
-        handleInputChange(usernameInput);
-        handleInputChange(passwordInput);
-
-        // Funcionalidad para mostrar/ocultar la contraseña
-        document.getElementById("togglePassword").addEventListener("click", function () {
-            var icon = this.querySelector("i");
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            } else {
-                passwordInput.type = "password";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
             }
         });
-    });
-</script>
+    </script>
 
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+        });
+    </script>
+</body>
 {% endblock %}
-{% block navbar %}{% endblock navbar %}
+{% block navbar %}{% endblock %}

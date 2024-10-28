@@ -164,4 +164,3 @@ AUTH_USER_MODEL = 'security.User'
 LOGIN_URL = '/security/auth/login'
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
-

@@ -1,6 +1,7 @@
 from django.http import StreamingHttpResponse, JsonResponse
 from django.views.generic import DetailView
 from django.shortcuts import redirect, render
+import numpy as np
 from .models import *
 from django.utils.timezone import now
 from app.security.models import Dashboard
@@ -61,6 +62,7 @@ def obtener_frame():
 
 
 #*******************Generador para capturar frames de la cámara y hacer predicciones*******************
+# Generador para capturar los frames y hacer predicciones
 def gen(tipo_modelo):
     global camera
     if not abrir_camara(): 
@@ -72,32 +74,26 @@ def gen(tipo_modelo):
                 break  
             time.sleep(0.01)
 
-            #Elegir el modelo y etiquetas según el tipo_modelo
+            # Elegir el modelo y etiquetas según el tipo_modelo
             if tipo_modelo == 'alfabeto':
                 model = inference_classifier2.model_alfabeto
                 labels_dict = inference_classifier2.labels_dict_alfabeto
-                logger.info("Usando el modelo de alfabeto.")
             elif tipo_modelo == 'numeros':
                 model = inference_classifier2.model_numeros
                 labels_dict = inference_classifier2.labels_dict_numeros
-                logger.info("Usando el modelo de números.")
-            else:
-                logger.error(f"Tipo de modelo no válido: {tipo_modelo}")
-                continue
+            elif tipo_modelo == 'colores':
+                model = inference_classifier2.model_colores
+                labels_dict = inference_classifier2.labels_dict_colores
 
-            #Realizar predicción
-            predicted_sign = None
-            if model is not None:
-                try:
-                    predicted_sign = inference_classifier2.predict_sign(frame, model, labels_dict)
-                    logger.info(f"Señal predicha por el modelo: {predicted_sign}")
-                except Exception as e:
-                    logger.error(f"Error durante la predicción: {e}")
+            # Realizar predicción y dibujar el recuadro
+            predicted_sign = inference_classifier2.predict_sign(frame, model, labels_dict, tipo_modelo)
 
             if predicted_sign:
-                #Mostrar la señal predicha en el frame
-                cv2.putText(frame, f"Seña: {predicted_sign}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+                # Mostrar la señal predicha en el frame
+                cv2.putText(frame, f"{predicted_sign}", (50, 50), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
 
+            # Convertir el frame a formato JPEG y enviarlo al navegador
             _, jpeg = cv2.imencode('.jpg', frame)
             frame = jpeg.tobytes()
             yield (b'--frame\r\n'
@@ -105,8 +101,7 @@ def gen(tipo_modelo):
     except Exception as e:
         logger.error(f"Error en el bucle de captura de frames: {e}")
     finally:
-        cerrar_camara() 
-
+        cerrar_camara()
 
 #**************Vista para transmitir el video según el tipo de modelo**************
 def video_feed(request, tipo_modelo):
@@ -114,24 +109,22 @@ def video_feed(request, tipo_modelo):
     response['Cache-Control'] = 'no-cache'
     return response
 
-
 #*******Función para detectar una seña dependiendo del tipo de lección*******
 def detectar_senal(request):
-    #Obtener el tipo de lección desde la solicitud POST
     tipo_leccion = request.POST.get('tipo_leccion')
 
     if not tipo_leccion:
         return JsonResponse({'status': 'error', 'mensaje': 'El tipo de lección no fue enviado.'})
 
-    #Seleccionar el modelo y las etiquetas dependiendo del tipo de lección
     if tipo_leccion == 'alfabeto':
         model = inference_classifier2.model_alfabeto
         labels_dict = inference_classifier2.labels_dict_alfabeto
-        logger.info("Usando el modelo de alfabeto para la detección.")
     elif tipo_leccion == 'numeros':
         model = inference_classifier2.model_numeros
         labels_dict = inference_classifier2.labels_dict_numeros
-        logger.info("Usando el modelo de números para la detección.")
+    elif tipo_leccion == 'colores':
+        model = inference_classifier2.model_colores
+        labels_dict = inference_classifier2.labels_dict_colores
     else:
         return JsonResponse({'status': 'error', 'mensaje': 'Tipo de lección no válido.'})
 
@@ -140,15 +133,18 @@ def detectar_senal(request):
     if frame is None:
         return JsonResponse({'status': 'error', 'mensaje': 'No se pudo capturar la imagen'})
 
-    #Procesar el frame para detectar la seña
-    predicted_sign = inference_classifier2.predict_sign(frame, model, labels_dict)
+    # Realizar predicción
+    predicted_sign = inference_classifier2.predict_sign(frame, model, labels_dict, tipo_leccion)
 
-    if predicted_sign:
+    # Asegurarse de que la predicción es del tipo correcto
+    if isinstance(predicted_sign, np.ndarray):
+        predicted_sign = predicted_sign.tolist()  # Convertir ndarray a lista si es necesario
+
+    if isinstance(predicted_sign, str):
         return JsonResponse({'status': 'success', 'senal_detectada': predicted_sign})
     else:
-        return JsonResponse({'status': 'error', 'mensaje': 'No se detectó ninguna seña'})
+        return JsonResponse({'status': 'error', 'mensaje': 'Predicción no válida.'}) 
 
-    
 #***************Vista para mostrar el detalle de una lección y su contenido***************
 
 class LeccionDetailView(DetailView):
@@ -170,6 +166,8 @@ class LeccionDetailView(DetailView):
             return ['core/lecciones/alfabeto.html']  
         elif tipo_leccion == 'numeros':
             return ['core/lecciones/numeros.html'] 
+        elif tipo_leccion == 'colores':
+            return ['core/lecciones/colores.html'] 
         else:
             return ['core/lecciones/detail.html']  # Plantilla predeterminada 
 
@@ -195,7 +193,7 @@ def feedback_nivel(request, nivel_id):
 
 def alfabeto(request):
     abecedario = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    letra_actual = request.session.get('letra_actual', 'Y')
+    letra_actual = request.session.get('letra_actual', 'A')
 
     alfabeto = Nivel.objects.get(orden=1)
     progreso, creado = Progreso.objects.get_or_create(usuario=request.user, nivel=alfabeto)
@@ -398,3 +396,105 @@ def numeros(request):
         logger.info(f"Número incorrecto. Seña realizada: {senal_realizada}, número actual esperado: {str(numero_actual)}")
         return JsonResponse({'status': 'error', 'mensaje': 'Número incorrecto, inténtalo de nuevo.'})
 
+
+#*************************Vista específica para manejar la lección de colores*************************
+def colores(request):
+    lista_colores = ['Rojo', 'Verde', 'Azul', 'Amarillo', 'Naranja', 'Morado', 'Negro', 'Blanco', 'Rosa', 'Cafe']
+    color_actual = request.session.get('color_actual', 'Rojo')
+
+    colores = Nivel.objects.get(orden=3)  # Suponiendo que los colores están en el Nivel 2
+    progreso, creado = Progreso.objects.get_or_create(usuario=request.user, nivel=colores)
+
+    # Verificar si el usuario ya completó el nivel
+    if progreso.completado:
+        return JsonResponse({
+            'status': 'completado',
+            'mensaje': 'Ya completaste el Nivel de Colores. Puedes dirigirte al feedback.',
+            'redirigir': '/feedback/'
+        })
+
+    try:
+        senal_inicial = Senal.objects.get(name=color_actual)
+        senal_detectada = senal_inicial.imagen.url
+        logger.info(f"Imagen encontrada para el color {color_actual}: {senal_detectada}")
+    except Senal.DoesNotExist:
+        senal_detectada = None
+        logger.error(f"No se encontró imagen para el color {color_actual}")
+
+    if request.method == 'GET':
+        return render(request, 'colores.html', {'senal_detectada': senal_detectada, 'color_actual': color_actual, 'progreso': progreso})
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
+        color_realizado = request.POST.get('color_realizado')
+        logger.info(f"Color realizado: {color_realizado}, color actual: {color_actual}")
+
+        if color_realizado == color_actual:
+            indice_actual = lista_colores.index(color_actual)
+
+            if color_actual == 'Cafe':
+                # Marcar el progreso del nivel como completado
+                progreso.completado = True
+                progreso.fecha_completado = now()
+                progreso.save()
+
+                # Desbloquear el siguiente nivel
+                try:
+                    siguiente_nivel = Nivel.objects.get(orden=colores.orden + 1)
+                    primera_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
+                    if not primera_leccion_siguiente_nivel:
+                        return JsonResponse({
+                            'status': 'error',
+                            'mensaje': 'El siguiente nivel no tiene una lección asociada.'
+                        })
+
+                    Progreso.objects.get_or_create(
+                        usuario=request.user,
+                        nivel=siguiente_nivel,
+                        defaults={'desbloqueado': True, 'leccion': primera_leccion_siguiente_nivel}
+                    )
+                except Nivel.DoesNotExist:
+                    return JsonResponse({
+                        'status': 'error',
+                        'mensaje': 'No se pudo encontrar el siguiente nivel.'
+                    })
+
+                # Actualizar el dashboard del usuario
+                try:
+                    dashboard, created = Dashboard.objects.get_or_create(usuario=request.user)
+                    dashboard.nivel_actual = siguiente_nivel
+                    dashboard.actualizar_dashboard()
+                except Exception as e:
+                    return JsonResponse({
+                        'status': 'error',
+                        'mensaje': f'Error al actualizar el dashboard: {str(e)}'
+                    })
+
+                # Redirigir a la página de niveles donde se mostrará el feedback desbloqueado
+                return JsonResponse({
+                    'status': 'success',
+                    'mensaje': '¡Felicidades! Has completado el Nivel de Colores. ¡Prepárate para el siguiente nivel!',
+                    'completado': True,
+                    'redirigir': '/levels/'  # Redirigir al listado de niveles
+                })
+
+            if indice_actual < len(lista_colores) - 1:
+                color_actual = lista_colores[indice_actual + 1]
+            request.session['color_actual'] = color_actual
+
+            try:
+                senal_inicial = Senal.objects.get(name=color_actual)
+                nueva_imagen = senal_inicial.imagen.url
+                logger.info(f"Nueva imagen encontrada para el color {color_actual}: {nueva_imagen}")
+            except Senal.DoesNotExist:
+                nueva_imagen = None
+                logger.error(f"No se encontró imagen para el color {color_actual}")
+
+            return JsonResponse({
+                'status': 'success',
+                'nuevo_color': color_actual,
+                'nueva_imagen': nueva_imagen,
+                'mensaje': '¡Seña de color correcta! Presiona el botón para continuar con el siguiente color.',
+                'completado': False 
+            })
+
+        return JsonResponse({'status': 'error', 'mensaje': 'Seña de color incorrecta, inténtalo de nuevo.'})

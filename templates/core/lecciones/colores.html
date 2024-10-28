@@ -4,22 +4,22 @@
 {% block content %}
 <body class="bodyevaluate hide-buttons">
     <div class="card-eva">
-        <h1>Nivel 1</h1>
+        <h1>Nivel 2</h1>
 
         <!-- Mensaje emergente inicial -->
         <div id="popup-message" class="popup-message">
             <div class="popup-content">
-                <h2>¡Bienvenido al Nivel 1!</h2>
-                <p>En este nivel aprenderá el abecedario en lengua de señas. ¡Haz clic en comenzar para iniciar!</p>
+                <h2>¡Bienvenido al Nivel de Colores!</h2>
+                <p>En este nivel aprenderá los colores en lengua de señas. ¡Haz clic en comenzar para iniciar!</p>
                 <button id="start-button" class="btn-primary">Comenzar</button>
             </div>
         </div>
 
-        <!-- Mensaje emergente para indicar éxito en la detección de la seña -->
+        <!-- Mensaje emergente para indicar éxito en la detección del color -->
         <div id="success-message" class="popup-message" style="display:none;">
             <div class="popup-content">
-                <h2>¡Seña correcta!</h2>
-                <p>Has realizado la seña correctamente. Haz clic en "Siguiente" para continuar con la siguiente letra.</p>
+                <h2>¡Color correcto!</h2>
+                <p>Has realizado el color correctamente. Haz clic en "Siguiente" para continuar con el siguiente color.</p>
                 <button id="next-button" class="btn-primary">Siguiente</button>
             </div>
         </div>
@@ -28,15 +28,15 @@
         <div id="content-container" class="containereva" style="display:none;">
             <!-- Cuadro izquierdo -->
             <div class="left-box">
-                <h2>Letra Actual: <span id="letra-actual">{{ letra_actual }}</span></h2>
-                <img id="imagen-letra" src="{{ senal_detectada }}" alt="Imagen de la Letra {{ letra_actual }}" width="300px">
+                <h2>Color Actual: <span id="color-actual">{{ color_actual }}</span></h2>
+                <img id="imagen-color" src="{{ senal_detectada }}" alt="Imagen del Color {{ color_actual }}" width="300px">
             </div>            
 
             <!-- Cuadro derecho con la cámara -->
             <div class="camera-container">
-                <h2>Detector de Señales IA</h2>
+                <h2>Detector de Colores IA</h2>
                 <!-- Transmisión en vivo de la cámara -->
-                <img src="{% url 'core:video_feed' 'alfabeto' %}" width="640" height="480" alt="Video en tiempo real">
+                <img src="{% url 'core:video_feed' 'colores' %}" width="640" height="480" alt="Video en tiempo real">
             </div>
         </div>
     </div>
@@ -139,8 +139,8 @@
             const startButton = document.getElementById('start-button');
             const successMessage = document.getElementById('success-message');
             const nextButton = document.getElementById('next-button');
-            const letraActual = document.getElementById('letra-actual');
-            const imagenLetra = document.getElementById('imagen-letra');
+            const colorActual = document.getElementById('color-actual');
+            const imagenColor = document.getElementById('imagen-color');
         
             // Al hacer clic en "Comenzar", se oculta el popup inicial y se muestra el contenido principal
             startButton.onclick = function() {
@@ -149,18 +149,18 @@
                 iniciarDeteccion();  // Iniciar la detección de señas después de hacer clic en "Comenzar"
             };
 
-            //Función para mostrar el mensaje de éxito cuando la seña es correcta
+            //Función para mostrar el mensaje de éxito cuando el color es correcto
             function mostrarMensajeExito() {
                 successMessage.style.display = 'flex'; 
             }
 
-            //Función para enviar la seña detectada al servidor para validación
-            function onSenalDetectada(senal_detectada) {
+            //Función para enviar el color detectado al servidor para validación
+            function onColorDetectado(senal_detectada) {
                 $.ajax({
-                    url: "{% url 'core:alfabeto' %}",  
+                    url: "{% url 'core:colores' %}",  
                     type: 'POST',
                     data: {
-                        'senal_realizada': senal_detectada,
+                        'color_realizado': senal_detectada,
                         'csrfmiddlewaretoken': '{{ csrf_token }}'
                     },
                     success: function(response) {
@@ -179,15 +179,15 @@
                                 });
                             } else {
                                 mostrarMensajeExito(); //Mostrar el mensaje de éxito
-                                // Al hacer clic en el botón "Siguiente", actualizar la letra actual y la imagen
+                                // Al hacer clic en el botón "Siguiente", actualizar el color actual y la imagen
                                 nextButton.onclick = function() {
-                                    letraActual.innerText = response.nueva_letra;
-                                    imagenLetra.src = response.nueva_imagen;
+                                    colorActual.innerText = response.nuevo_color;
+                                    imagenColor.src = response.nueva_imagen;
                                     successMessage.style.display = 'none';
                                 };
                             }
                         } else {
-                            console.log('Seña incorrecta');
+                            console.log('Seña incorrecto');
                         }
                     },
                     error: function(xhr, status, error) {
@@ -196,8 +196,8 @@
                 });
             }            
 
-            //Función para hacer una petición al backend y detectar la seña en tiempo real
-            function detectarSenalDesdeBackend() {
+            //Función para hacer una petición al backend y detectar el color en tiempo real
+            function detectarColorDesdeBackend() {
                 const tipoLeccion = '{{ tipo_leccion }}'; 
                 console.log("Tipo de lección enviado:", tipoLeccion); 
             
@@ -210,22 +210,22 @@
                     },
                     success: function(response) {
                         if (response.status === 'success') {
-                            //Si se detecta una seña correctamente, procesa la respuesta
+                            //Si se detecta un color correctamente, procesa la respuesta
                             var senal_detectada = response.senal_detectada;
-                            onSenalDetectada(senal_detectada);  //Procesa la seña detectada
+                            onColorDetectado(senal_detectada);  //Procesa el color detectado
                         } else {
-                            console.log('No se detectó ninguna seña.');
+                            console.log('No se detectó ningún color.');
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.log('Error al detectar la seña:', error);
+                        console.log('Error al detectar el color:', error);
                     }
                 });
             }                       
 
-            //Función para iniciar la detección de señas a intervalos regulares
+            //Función para iniciar la detección de colores a intervalos regulares
             function iniciarDeteccion() {
-                setInterval(detectarSenalDesdeBackend, 2000);  //Llama a la IA cada 2 segundos
+                setInterval(detectarColorDesdeBackend, 2000);  //Llama a la IA cada 2 segundos
             }
         });
     </script>    
