@@ -27,12 +27,12 @@ Este sistema emplea OpenCV, scikit-learn y Django para capturar y procesar imág
     touch .env
 7.	Abra el archivo .env y añada las siguientes variables con los valores correspondientes para la base de datos:
     Ejemplo:
-    # DB_ENGINE=django.db.backends.postgresql
-    # DB_DATABASE=nombre_basedatos
-    # DB_USERNAME=usuario
-    # DB_PASSWORD=contraseña
-    # DB_SOCKET=localhost
-    # DB_PORT=5432
+    DB_ENGINE=django.db.backends.postgresql
+    DB_DATABASE=nombre_basedatos
+    DB_USERNAME=usuario
+    DB_PASSWORD=contraseña
+    DB_SOCKET=localhost
+    DB_PORT=5432
 
 # Aplicación de migraciones
 8.	Revisar que el entorno virtual esté activo
