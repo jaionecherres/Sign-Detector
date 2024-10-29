@@ -19,7 +19,7 @@ class ListViewMixin(object):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title1'] = f'{self.model._meta.verbose_name_plural}'
-        context['title2'] = f'Consulta de {self.model._meta.verbose_name_plural}'
+        context['title2'] = f'{self.model._meta.verbose_name_plural}'
         # añade los permisos del grupo activo(add_pais, view_ciudad)
         # print("estoy en el mixing..")
         # print(self.request.session.get('group_id'))

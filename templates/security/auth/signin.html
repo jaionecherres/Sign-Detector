@@ -1,56 +1,102 @@
-{% extends 'components/base.html' %}
-{% block title %}{{ title1 }}{% endblock %}
-{% load static %}
-{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
 
-<!-- Tailwind CSS -->
-{% tailwind_css %}
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Mi Sitio Web{% endblock %}</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free HTML Templates" name="keywords">
+    <meta content="Free HTML Templates" name="description">
+    {% load static %}
+    {% load static tailwind_tags %}
 
-{% block content %}
+    <!-- Tailwind CSS -->
+    {% tailwind_css %}
+
+    <!-- Favicon -->
+    <link href="{% static 'img/favicon.ico' %}" rel="icon">
+
+    <!-- Flowbite JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- AOS Library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"
+        integrity="sha512-1cK78a1o+ht2JcaW6g8OXYwqpev9+6GqOkz9xmBN9iUUhIndKtxwILGWYOSibOKjLsEdjyjZvYDq/cZwNeak0w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{% static 'lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+
 <body class="text-secondary loading text-items font-Quicksand text-lg font-light" style="margin: 0; padding: 0; background-color: #F5F1DA; background-image: url('{% static "img/fondohome2.jpeg" %}'); background-size: cover; background-attachment: fixed;">
+
+    {% block content %}
     <!-- Sección principal con Tailwind y fondo de imagen ajustado -->
     <section class="flex justify-center items-center h-screen bg-cover bg-center">
-        <!-- Se añadió mt-[-50px] para subir el recuadro -->
-        <div class="w-full max-w-[400px] p-8 bg-transparent border border-white rounded-lg backdrop-blur-md flex flex-col justify-center items-center mt-[-50px]" style="min-height: 550px;">
+        <!-- Estilos en línea añadidos para forzar el tamaño -->
+        <div class="w-full max-w-[400px] p-8 bg-transparent border border-white rounded-lg backdrop-blur-md flex flex-col justify-center items-center mt-[-50px]" style="min-height: 550px; height: 550px;"> 
             <h1 class="text-3xl font-bold text-center text-gray-800 mb-10" style="color: black; font-family: 'Jomolhari', serif">Login</h1>
-
             <form method="POST" class="w-full">
+
                 {% csrf_token %}
 
                 <!-- Campo de usuario -->
                 <div class="mb-4 relative">
-                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-500">{{ form.username.label }}</label>
+                    <label for="{{ form.username.id_for_label }}"
+                        class="block text-sm font-medium text-gray-500">{{ form.username.label }}</label>
                     <input type="text" name="username" id="id_username"
                         class="pr-4 py-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 bg-transparent text-gray-500 placeholder-gray-500"
                         placeholder="Email" style="text-indent: 2.5rem;">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="top: 50%;">
                         <i class="fas fa-user" style="color: black;"></i>
                     </span>
-                </div>
+                </div>                             
 
                 <!-- Campo de contraseña -->
                 <div class="mb-4 relative">
-                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-500">{{ form.password.label }}</label>
+                    <label for="{{ form.password.id_for_label }}"
+                        class="block text-sm font-medium text-gray-500">{{ form.password.label }}</label>
                     <input type="password" name="password" id="id_password"
-                        class="pr-4 py-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 bg-transparent text-gray-500 placeholder-gray-500"
+                        class="pr-4 py-2 block w-3/4 shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 bg-transparent text-gray-500 placeholder-gray-500"
                         placeholder="Contraseña" style="text-indent: 2.5rem; width: 335px;">
+                    
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="top: 75%; transform: translateY(-50%);">
                         <i class="fas fa-lock" style="color: black;"></i>
                     </span>
+                    
                     <a href="javascript:void(0)" id="togglePassword" class="absolute right-0 pr-3 flex items-center" style="top: 75%; transform: translateY(-50%);">
                         <i id="eyeIcon" class="fas fa-eye" style="color: black;"></i>
                     </a>
                 </div>
-
+                                                            
                 <!-- Enlace de olvido de contraseña -->
                 <div class="mb-4 text-right">
                     <a href="#" class="text-white hover:underline text-sm">¿Olvidé mi contraseña?</a>
                 </div>
 
-                <!-- Botón de inicio de sesión -->
+                <!-- Botón de inicio de sesión --> 
                 <div class="flex justify-center mt-2">
                     <button type="submit" class="text-white py-2 px-4 rounded-md shadow-md w-full flex items-center justify-center"
-                        style="background-image: url('{% static "img/login_boton.jpg" %}'); background-size: cover; background-position: center;">
+                        style="background-image: url('{% static "img/login_boton.jpeg" %}'); background-size: cover; background-position: center;">
                         Login
                     </button>
                 </div>
@@ -58,12 +104,28 @@
 
             <!-- Texto de registro -->
             <div class="text-center mt-4">
-                <p class="text-sm text-white">¿No estoy registrado? <a href="{% url 'security:auth_signup' %}" class="text-orange-500 hover:underline">Regístrate</a></p>
+                <p class="text-sm text-white">¿No estoy registrado? <a href="{% url 'security:auth_signup' %}"
+                        class="text-orange-500 hover:underline">Regístrate</a></p>
             </div>
         </div>
     </section>
+    {% endblock content %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/sweet_alert.js' %}"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"
+        integrity="sha512-A7AYk1fGKX6S2SsHywmPkrnzTZHrgiVT7GcQkLGDe2ev0aWb8zejytzS8wjo7PGEXKqJOrjQ4oORtnimIRZBtw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+        });
+
         const togglePassword = document.getElementById('togglePassword');
         const passwordField = document.getElementById('id_password');
         const eyeIcon = document.getElementById('eyeIcon');
@@ -82,12 +144,6 @@
         });
     </script>
 
-    <script>
-        AOS.init({
-            duration: 1000,
-            once: true,
-        });
-    </script>
 </body>
-{% endblock %}
-{% block navbar %}{% endblock %}
+
+</html>

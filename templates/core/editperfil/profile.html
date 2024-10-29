@@ -1,167 +1,77 @@
-{% extends 'components/base.html' %}
+{% extends 'components/base.html' %} 
 {% load static %}
 
 {% block content %}
-<head>
-    <style>
-        /* Estilos para mover la imagen */
-        #imagenPreview {
-            display: flex;
-            justify-content: center; /* Centra horizontalmente */
-            align-items: center; /* Centra verticalmente */
-            margin-top: 20px; /* Ajusta el espacio superior */
-            margin-bottom: 20px; /* Ajusta el espacio inferior */
-        }
-
-        #imagenPreview img {
-            /* Si necesitas moverla más dentro de su contenedor, puedes usar transform */
-            position: relative;
-            top: 10px; /* Ajusta la posición vertical */
-            left: 20px; /* Ajusta la posición horizontal */
-        }
-
-        /* Estilo del Texto 'Perfil de Usuario' */
-        #perfilUsuario {
-        font-size: 1.5rem; /* Tamaño de la fuente */
-        font-weight: bold; /* Negrita */
-        color: #333; /* Color del texto */
-        position: relative; /* Posicionamiento relativo para poder moverlo */
-        top: 20px; /* Mueve el texto hacia abajo */
-        left: 150px; /* Mueve el texto hacia la derecha */
-        margin-bottom: 20px; /* Espacio entre el texto y la imagen */
-        }
-
-        .columna-derecha-usuario {
-            transform: translateX(280px); /* Ajusta este valor para mover el formulario a la derecha */
-        }
-
-        /* Asegurar que todos los inputs tengan el mismo tamaño */
-        input[type="text"],
-        input[type="email"],
-        input[type="number"] {
-            width: 100%; /* Hacer que ocupe todo el espacio disponible dentro de su columna */
-            padding: 10px; /* Padding consistente en todos los inputs */
-            box-sizing: border-box; /* Asegura que el padding se incluya en el ancho total */
-            background-color: #D9D9D9
-        }
-
-        /* Alinear el grid de los campos de formulario */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Dos columnas iguales */
-            gap: 20px; /* Espacio entre los cuadros */
-        }
-
-        /* Asegurar que las etiquetas estén alineadas con sus inputs */
-        label {
-            font-weight: bold;
-            display: block; /* Asegura que la etiqueta esté alineada encima del input */
-            margin-bottom: 10px; /* Espacio entre la etiqueta y el input */
-        }
-
-        /* Hacer que los inputs mantengan una altura uniforme */
-        input {
-            height: 45px; /* Ajusta este valor para que todos los inputs tengan la misma altura */
-            border-radius: 6px;
-        }
-
-        /* Media Query para pantallas pequeñas: columnas en una sola fila */
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
-            }
-        }
-        
-    </style>
-</head>
-<body class="bodyeditprofile hide-buttons">
-    <title>{% block title %} {{ title1 }} {% endblock title %}</title>
-    <section class="dark:bg-principal mt-20" style="background-color: #F5F1DA;">
-        <div class="flex flex-col items-center justify-center">
-            <span class="rounded-full bg-indigo-500 px-2 py-1 text-white uppercase text-sm">
-                {{ title1 }}
-            </span>
-        </div>
-        <div class="text-center" data-aos="fade" data-aos-delay="200">
-            <h1 class="dark:text-white text-4xl text-center mt-6 font-black my-2">
-                {{ title2 }}
-            </h1>
-            <h4 class="dark:text-gray-400 text-center mt-6 text-lg font-light">Perfil</h4>
-            <h2 class="dark:text-blue-300 text-2xl text-center mt-6 font-black my-2 mb-4">Perfil de Usuario</h2>
-            <p class="dark:text-gray-400 text-center mt-6 text-lg font-light">
-                Visualice su información.
-            </p>
-        </div>
-        <form method="post" enctype="multipart/form-data" class="space-y-6 py-4">
-            <div class="grid grid-cols-2 gap-8 mx-1 lg:mx-40" data-aos="fade">
-                
-                <!-- Contenedor principal que agrupa imagen y detalles -->
-                <div class="col-lg-11 ml-auto">
-                    <!-- Contenedor para alinear la imagen y los detalles -->
-                    <div class="profile-container" style="display: flex; align-items: flex-start; gap: 20px;">
-                        <div class="flex flex-col md:flex-row justify-center mt-6 w-full px-4" style="transform: translateX(50px);">
-                            <!-- Texto 'Perfil de Usuario' -->
-                            <h2 id="perfilUsuario">Perfil de Usuario</h2>
-                        
-                            <!-- Imagen de Perfil -->
-                            <div id="imagenPreview">
-                                {% if user.get_image %}
-                                    <img src="{{ user.get_image }}" class="d-block rounded-full" alt="Foto de perfil" style="width: 150px; height: 150px;">
-                                {% else %}
-                                    <img src="{% static 'img/Taylor.jpg' %}" class="d-block rounded-full" alt="Foto de perfil por defecto" style="width: 270px; height: 270px;">
-                                {% endif %}
-                            </div>
-                            <!-- Botón Guardar con margen superior -->
-                            <div style="display: flex; align-items: center; margin-top: 20px;">
-                                <!-- Botón Guardar -->
-                                <button type="submit" style="background-color: #a0a38a; color: white; padding: 0.5rem 1rem; border-radius: 9999px; margin-right: 50px; border: none; display: flex; align-items: center;">
-                                    <i class="fa-solid fa-save mr-2"></i>Seleccionar archivo
-                                </button>
-                            
-                                <!-- Botón Cancelar -->
-                                <button type="button" style="background-color: #a0a38a; color: white; padding: 0.5rem 1rem; border-radius: 9999px; border: none; display: flex; align-items: center;">
-                                    <i class="fa-solid fa-xmark mr-2"></i>Actualizar contraseña
-                                </button>
-                            </div>
-                            
-                        </div>
-
-                        <!-- Columna derecha: Datos de usuario -->
-                        <div class="p-4 rounded-3xl dark:bg-secundario flex flex-col justify-center items-center columna-derecha-usuario" data-aos="fade-right" data-aos-delay="200">
-                            {% csrf_token %}
-                            <!-- Cuadrícula de 2 columnas para colocar los elementos en filas separadas -->
-                            <div class="form-grid">
-                                <!-- Fila 1: Usuario y Nombres -->
-                                <div class="mb-4">
-                                    <label for="{{ form.username.id_for_label }}" class="dark:text-blue-300 text-mint-600 font-black uppercase text-lg block">Usuario</label>
-                                    <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}" value="{{ form.username.value }}" class="dark:text-gray-300 dark:bg-gray-800 focus:outline-none focus:border-mint-500 focus:ring-2 focus:ring-mint-200 border border-gray-300 rounded-md py-2 px-3 placeholder-gray-400">
-                                </div>
-                                <div class="mb-4">
-                                    <label for="{{ form.first_name.id_for_label }}" class="dark:text-blue-300 text-mint-600 font-black uppercase text-lg block">Nombres</label>
-                                    <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}" value="{{ form.first_name.value }}" class="dark:text-gray-300 dark:bg-gray-800 focus:outline-none focus:border-mint-500 focus:ring-2 focus:ring-mint-200 border border-gray-300 rounded-md py-2 px-3 placeholder-gray-400">
-                                </div>
-
-                                <!-- Fila 2: Correo Electrónico y Teléfono -->
-                                <div class="mb-4">
-                                    <label for="{{ form.email.id_for_label }}" class="dark:text-blue-300 text-mint-600 font-black uppercase text-lg block">Correo Electrónico</label>
-                                    <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value }}" class="dark:text-gray-300 dark:bg-gray-800 focus:outline-none focus:border-mint-500 focus:ring-2 focus:ring-mint-200 border border-gray-300 rounded-md py-2 px-3 placeholder-gray-400">
-                                </div>
-                                <div class="mb-4">
-                                    <label for="{{ form.phone.id_for_label }}" class="dark:text-blue-300 text-mint-600 font-black uppercase text-lg block">Teléfono</label>
-                                    <input type="text" name="{{ form.phone.name }}" id="{{ form.phone.id_for_label }}" value="{{ form.phone.value }}" class="dark:text-gray-300 dark:bg-gray-800 focus:outline-none focus:border-mint-500 focus:ring-2 focus:ring-mint-200 border border-gray-300 rounded-md py-2 px-3 placeholder-gray-400">
-                                </div>
-                            </div>
-                        </div>
-
-
-
+<title>{% block title %} {{ title1 }} {% endblock title %}</title>
+<section class="dark:bg-principal mt-20">
+    <div class="flex flex-col items-center justify-center mt-10"> <!-- Aumenté el margin-top para bajar la parte superior -->
+        <span style="color: black !important; font-size: 1.25rem; font-family: 'Jomolhari', serif;">Perfil</span>  
+    </div>
+    <div class="text-center" data-aos="fade" data-aos-delay="200">
+        <h1 class="dark:text-white text-4xl text-center mt-6 font-black my-2" style="color: black; font-family: 'Jomolhari', serif;">
+            {{ title2 }}
+        </h1>
+        <p class="text-center mt-6 text-lg font-light" style="color: #A0A38A; font-family: 'Jomolhari', serif;">
+            Visualice su información.
+        </p>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="space-y-6 py-4">
+        <div class="grid grid-cols-2 gap-8 mx-4 lg:mx-20" data-aos="fade">
+            <!-- Columna izquierda -->
+            <div class="bg-[#FAF3DD] dark:bg-principal rounded-3xl flex flex-col justify-center items-center p-12 pb-2" data-aos="fade-right" data-aos-delay="200">
+                <h2 class="dark:text-blue-300 text-2xl text-center mt-6 font-black my-2 mb-4" style="color: black; font-family: 'Jomolhari', serif;">
+                    Perfil de Usuario
+                </h2>
+                <div class="w-[60%] text-center rounded-lg overflow-hidden">
+                    <div id="imagenPreview">
+                        {% if user.get_image %}
+                        <img src="{{ user.get_image }}" class="mx-auto d-block rounded-lg" alt="Foto de perfil" style="width: 200px; height: 200px; object-fit: cover;">
+                        {% else %}
+                        <img src="{% static 'img/perfil_random.jpeg' %}" class="mx-auto d-block rounded-lg" alt="Foto de perfil por defecto" style="width: 200px; height: 200px; object-fit: cover;">
+                        {% endif %}
                     </div>
-                </div>  
+                </div>                
             </div>
-        </form>
-    </section>
+            <!-- Columna derecha -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-3xl bg-[#FAF3DD] dark:bg-principal flex flex-col justify-center items-center" data-aos="fade-right" data-aos-delay="200">
+                <!-- Datos de Usuario -->
+                <div> 
+                    <p class="dark:text-gray-400" style="color: black; font-family: 'Jomolhari', serif;">
+                        <span class="dark:text-blue-300 font-black uppercase text-2xl" style="color: black;">Usuario:</span><br>{{ user.username }}
+                        {% if user.is_superuser %}
+                        <span class="font-black uppercase text-2xl" style="color: #E37E18; font-family: 'Jomolhari', serif;"> | Administrador</span>
+                        {% endif %}
+                    </p>
+                </div>                               
+                <div>
+                    <p class="dark:text-gray-400" style="color: black; font-family: 'Jomolhari', serif;"><span class="dark:text-blue-300 font-black uppercase text-2xl" style="color: black;">Nombres:</span><br> {{ user.first_name }} {{ user.last_name }}</p>
+                </div>
+                <div>
+                    {% if user.phone %}
+                    <p class="dark:text-gray-400" style="color: black; font-family: 'Jomolhari', serif;"><span class="dark:text-blue-300 font-black uppercase text-2xl" style="color: black;">Celular:</span><br> {{ user.phone }}</p>
+                    {% else %}
+                    <p class="dark:text-gray-400" style="color: black; font-family: 'Jomolhari', serif;"><span class="dark:text-blue-300 font-black uppercase text-2xl" style="color: black;">Celular:</span><br> No Registrado</p>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if user.email %}
+                    <p class="dark:text-gray-400" style="color: black; font-family: 'Jomolhari', serif;"><span class="dark:text-blue-300 font-black uppercase text-2xl" style="color: black;">Correo:</span><br> <a href="mailto:{{ user.correo }}" style="color: black;">{{ user.email }}</a></p>
+                    {% else %}
+                    <p class="dark:text-gray-400" style="color: black; font-family: 'Jomolhari', serif;"><span class="dark:text-blue-300 font-black uppercase text-2xl" style="color: black;">Correo:</span><br> No Registrado</p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Botones debajo de la imagen -->
+            <div class="flex justify-center mt-2"> <!-- Cambié de mt-6 a mt-4 para subir los botones -->
+                <a style="background-color: #A0A38A; font-family: 'Jomolhari', serif;" class="hover:bg-[#8C8D77] text-white py-2 px-4 rounded-full mr-2 flex items-center justify-center" href="{% url 'security:auth_update_profile' %}">
+                    <i class="fa-solid fa-file-pen mr-2"></i> Actualizar Datos
+                </a>
+                <a style="background-color: #A0A38A; font-family: 'Jomolhari', serif;" class="hover:bg-[#8C8D77] text-white py-2 px-4 rounded-full mr-2 flex items-center justify-center" href="{% url 'security:auth_update_contra' %}">
+                    <i class="fa-solid fa-key mr-2"></i> Actualizar Contraseña
+                </a>
+            </div>
+        </div>
+    </form>
+</section>
 
-</body>
-
-
-{% endblock %}
+{% endblock content %}

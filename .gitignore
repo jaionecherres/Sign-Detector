@@ -1,0 +1,44 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+
+# Django stuff:
+*.log
+db.sqlite3
+*.pot
+*.pyc
+*.pyo
+*.so
+
+# Media and static files
+static/
+media/
+
+# Local settings and secret keys
+.env
+*.env
+
+# Migrations
+**/migrations/
+
+# IDEs
+.vscode/
+.idea/
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+# pipenv and poetry lock files
+Pipfile.lock
+poetry.lock
+
+node_modules/
+django_debug

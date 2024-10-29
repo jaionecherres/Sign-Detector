@@ -4,112 +4,240 @@
 
 {% block content %}
 <!-- SECCIÓN DEL HERO -->
-<section>
-    {% if not user.is_superuser %}
-        <div class="container-fluid mx-auto">
-            <div class="row py-1">
-                <div class="col-lg-12 px-0">
-                    <nav class="navbar navbar-expand-lg py-0">
-                        <div class="navbar-nav flex justify-between items-center w-full px-4">
-                            <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#" style="padding-left: 50px;">Información</a>
-                            <div class="vr"></div>
-                            <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#">Lenguaje de Señas</a>
-                            <div class="vr"></div>
-                            <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#">Guía</a>
-                            <div class="vr"></div>
-                            <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#" style="padding-right: 50px;">IA</a>
-                        </div>                        
-                    </nav>
-                </div>
-            </div>
-        </div>
-
-        <!-- Carrusel -->
-        <div id="header-carousel" class="container-fluid p-0 pb-5 mb-5">
-            <div class="carousel slide carousel-fade relative h-96" data-bs-ride="carousel" data-bs-interval="3000">
-                <ol class="carousel-indicators absolute right-0 bottom-0 left-0 flex justify-center p-0 mb-4">
-                    <li data-bs-target="#header-carousel" data-bs-slide-to="0" class="active"></li>
-                    <li data-bs-target="#header-carousel" data-bs-slide-to="1"></li>
-                    <li data-bs-target="#header-carousel" data-bs-slide-to="2"></li>
-                </ol>
-                <div class="carousel-inner h-96">
-                    <div class="carousel-item active h-96">
-                        <img class="w-full h-full object-cover" src="{% static 'img/inicio1.webp' %}" alt="Primera imagen">
-                        <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
-                            <div class="p-5 text-center max-w-2xl">
-                                <h5 class="text-white uppercase mb-3">Best Online Sign Language Course</h5>
-                                <h1 class="text-white text-3xl md:text-5xl font-bold mb-4">Best Education From Your Home</h1>
-                                <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white;" class="py-2 px-4 rounded-lg mt-3">Empezar</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item h-96">
-                        <img class="w-full h-full object-cover" src="{% static 'img/lenguaje_senas.jpeg' %}" alt="Segunda imagen">
-                        <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
-                            <div class="p-5 text-center max-w-2xl">
-                                <h5 class="text-white uppercase mb-3">Best Online Sign Language Course</h5>
-                                <h1 class="text-white text-3xl md:text-5xl font-bold mb-4">Best Education From Your Home</h1>
-                                <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white;" class="py-2 px-4 rounded-lg mt-3">Empezar</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item h-96">
-                        <img class="w-full h-full object-cover" src="{% static 'img/lenguajeSeñas.jpeg' %}" alt="Tercera imagen">
-                        <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
-                            <div class="p-5 text-center max-w-2xl">
-                                <h5 class="text-white uppercase mb-3">Best Online Sign Language Course</h5>
-                                <h1 class="text-white text-3xl md:text-5xl font-bold mb-4">Best Education From Your Home</h1>
-                                <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white;" class="py-2 px-4 rounded-lg mt-3">Empezar</a>
-                            </div>
-                        </div>
+    <section style="padding: 0; margin: 0; background-color: #F5F1DA; border-bottom: none;"> <!-- Ajustamos padding y margin -->
+        {% if not user.is_superuser %}
+            <div class="container-fluid mx-auto" style="padding: 0; margin: 0;"> <!-- Ajustamos padding y margin -->
+                <div class="row py-1" style="padding-top: 0;">
+                    <div class="col-lg-12 px-0">
+                        <nav class="navbar navbar-expand-lg py-0">
+                            <div class="navbar-nav flex justify-between items-center w-full px-4">
+                                <!-- Al hacer clic, redireccionará al contenedor con id 'informacion' -->
+                                <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#informacion" style="padding-left: 50px;">Información</a>
+                                <div class="vr"></div>
+                                
+                                <!-- Al hacer clic, redireccionará al contenedor con id 'lenguaje-de-senas' -->
+                                <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#Lenguaje_de_Senas">Lengua de Señas</a>
+                                <div class="vr"></div>
+                                
+                                <!-- Al hacer clic, redireccionará al contenedor con id 'guia' -->
+                                <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#guia">Guía</a>
+                                <div class="vr"></div>
+                                
+                                <!-- Al hacer clic, redireccionará al contenedor con id 'ia' -->
+                                <a class="nav-item nav-link text-center text-gray-700 font-medium" href="#ia" style="padding-right: 50px;">IA</a>
+                            </div>                        
+                        </nav>
                     </div>
                 </div>
             </div>
+
+            <!-- Carrusel -->
+            <div id="header-carousel" class="container-fluid p-0">
+                <div class="carousel slide carousel-fade relative" id="mainCarousel" data-bs-ride="carousel" data-bs-interval="3000" style="height: 85vh;"> <!-- Cambiado a 100vh para que ocupe toda la altura visible -->
+                    <ol class="carousel-indicators absolute right-0 bottom-0 left-0 flex justify-center p-0 mb-4">
+                        <li data-bs-target="#mainCarousel" data-bs-slide-to="0" class="active"></li>
+                        <li data-bs-target="#mainCarousel" data-bs-slide-to="1"></li>
+                        <li data-bs-target="#mainCarousel" data-bs-slide-to="2"></li>
+                    </ol>
+                    <div class="carousel-inner" style="height: 85vh;"> <!-- Cambiado a 100vh para que ocupe toda la altura visible -->
+                        <div class="carousel-item active" style="height: 85vh;">
+                            <img class="w-full h-full object-cover" src="{% static 'img/inicio1.webp' %}" alt="Primera imagen">
+                            <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
+                                <div class="p-5 text-center max-w-2xl">
+                                    <p class="text-white uppercase mb-3">La clave para una sociedad inclusiva está en tus manos</p>
+                                    <h3 class="text-white text-3xl md:text-5xl font-bold mb-4" style="font-family: 'Arial', sans-serif; font-size: 2.5rem; font-weight: bold;">¡Bienvenido a DULLNANE, donde la comunicación es para todos!</h3>
+                                    {% if user.is_authenticated %}
+                                        <!-- Si el usuario está autenticado, redirigir a la URL de niveles -->
+                                        <a href="{% url 'levels' %}" style="background-color: #f97316; color: white; font-size: 1.25rem; padding: 0.5rem 1rem;" class="rounded-lg mt-3"> Empezar </a>
+                                    {% else %}
+                                        <!-- Si el usuario no está autenticado, mostrar la función actual -->
+                                        <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white; font-size: 1.25rem; padding: 0.5rem 1rem;" class="rounded-lg mt-3"> Empezar </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Otras imágenes del carrusel -->
+                        <div class="carousel-item" style="height: 85vh;">
+                            <img class="w-full h-full object-cover" src="{% static 'img/lenguaje_senas.jpeg' %}" alt="Segunda imagen">
+                            <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
+                                <div class="p-5 text-center max-w-2xl">
+                                    <p class="text-white uppercase mb-3">La clave para una sociedad inclusiva está en tus manos</p>
+                                    <h3 class="text-white text-3xl md:text-5xl font-bold mb-4" style="font-family: 'Arial', sans-serif; font-size: 2.5rem; font-weight: bold;">¡Bienvenido a DULLNANE, donde la comunicación es para todos!</h3>
+                                    {% if user.is_authenticated %}
+                                        <a href="{% url 'levels' %}" style="background-color: #f97316; color: white; font-size: 1.25rem; padding: 0.5rem 1rem;" class="rounded-lg mt-3"> Empezar </a>
+                                    {% else %}
+                                        <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white; font-size: 1.25rem; padding: 0.5rem 1rem;" class="rounded-lg mt-3"> Empezar </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tercera imagen -->
+                        <div class="carousel-item" style="height: 85vh;">
+                            <img class="w-full h-full object-cover" src="{% static 'img/lenguajeSeñas.jpeg' %}" alt="Tercera imagen">
+                            <div class="carousel-caption flex items-center justify-center absolute inset-0 bg-black bg-opacity-50">
+                                <div class="p-5 text-center max-w-2xl">
+                                    <p class="text-white uppercase mb-3">La clave para una sociedad inclusiva está en tus manos</p>
+                                    <h3 class="text-white text-3xl md:text-5xl font-bold mb-4" style="font-family: 'Arial', sans-serif; font-size: 2.5rem; font-weight: bold;">¡Bienvenido a DULLNANE, donde la comunicación es para todos!</h3>
+                                    {% if user.is_authenticated %}
+                                        <a href="{% url 'levels' %}" style="background-color: #f97316; color: white; font-size: 1.25rem; padding: 0.5rem 1rem;" class="rounded-lg mt-3"> Empezar </a>
+                                    {% else %}
+                                        <a href="javascript:void(0)" onclick="showSelection()" style="background-color: #f97316; color: white; font-size: 1.25rem; padding: 0.5rem 1rem;" class="rounded-lg mt-3"> Empezar </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Fullscreen Selection Section -->
+    <section id="selection-section" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" style="backdrop-filter: blur(10px);">
+        {% if not user.is_authenticated %}
+            <div class="flex justify-center mt-10">
+                <a href="{% url 'security:auth_login' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 1cm; text-decoration: none;">
+                    <div class="flex flex-col items-center justify-center h-full" data-aos="fade-in">
+                        <i class="fas fa-user-shield mb-4 text-8xl" style="color: #474747;"></i>
+                        <p class="text-xl font-semibold mt-3 text-black">Administrador</p>
+                    </div>
+                </a>            
+                <a href="{% url 'security:auth_login' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 1cm; text-decoration: none;">
+                    <div class="flex flex-col items-center justify-center h-full" data-aos="fade-in">
+                        <i class="fas fa-user mb-4 text-8xl" style="color: #474747;"></i>
+                        <p class="text-xl font-semibold mt-3 text-black">Usuario</p>
+                    </div>
+                </a>
+                <a href="{% url 'home' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 0; text-decoration: none;">
+                    <div class="flex flex-col items-center justify-center h-full" data-aos="fade-in">
+                        <i class="fa-solid fa-users mb-4 text-8xl" style="color: #474747;"></i>
+                        <p class="text-xl font-semibold mt-3 text-black">Invitado</p>
+                    </div>
+                </a>            
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Información -->
+    <section>
+        {% if not user.is_superuser %}
+            <!-- Agregar campos de información -->
+            <div id="informacion" class="mx-auto py-5 border border-gray-300 rounded-lg flex items-center" style="background-color: hsla(30, 50%, 90%, 1); width: 100%; height: 50%;" data-aos="fade-up">
+                <!-- Contenedor de Imagen -->
+                <div class="w-1/2" style="padding: 80px; width: 1000px; height: 600px; overflow: hidden; border-radius: 20px;">
+                    <img src="{% static 'img/informacion.jpeg' %}" class="w-full h-full object-cover" style="border-radius: 20px;">
+                </div>  
+                <!-- Contenedor de Texto -->
+                <div class="w-1/2 px-8" style="padding: 80px;">
+                    <h2 class="text-4xl font-bold mb-4" style="font-family: 'Jeju Hallasan', cursive; color: #68714B;">Información</h2>
+                    <p class="text-lg text-justify leading-relaxed" style="color: #585858; font-family: 'Inter', sans-serif;">
+                        En DULLNANE, nuestra misión es brindar a todas las personas la oportunidad de aprender el lengua de señas, 
+                        una herramienta fundamental para romper las barreras de comunicación y promover la inclusión. Sabemos lo 
+                        importante que es poder comunicarse de manera efectiva con personas con discapacidad auditiva, y es por eso que 
+                        queremos ayudarte a adquirir esta habilidad. Ya sea para mejorar tu entorno profesional, personal o simplemente 
+                        para fomentar una sociedad más accesible e inclusiva, el lengua de señas te abrirá puertas que nunca imaginaste.
+                    </p>
+                </div>
+            </div>
+
+            <div id="Lenguaje_de_Senas" class="mx-auto py-5 border border-gray-300 rounded-lg flex items-center" style="background-color: hsla(90, 20%, 90%, 1); width: 100%; height: 50%;" data-aos="fade-up">
+                <!-- Contenedor de Texto -->
+                <div class="w-1/2 px-8" style="padding: 80px;">
+                    <h2 class="text-4xl font-bold mb-4" style="font-family: 'Jeju Hallasan', cursive; color: #68714B;">Lengua de Señas</h2>
+                    <p class="text-lg text-justify leading-relaxed" style="color: #585858; font-family: 'Inter', sans-serif;">
+                        Lengua de señas o lengua de signos es una lengua natural que utilizan principalmente 
+                        las personas sordas para comunicarse. Se basa en expresiones gestuales y configuración gesto-espacial, así como en percepciones 
+                        visuales y, en algunos casos, táctiles. Al igual que cualquier otra lengua, posee sus propias reglas lingüísticas y se aprende de 
+                        manera similar a como se aprenden las lenguas habladas.
+                    </p>
+                </div>
+                <!-- Contenedor de Imagen -->
+                <div class="w-1/2" style="padding: 80px; width: 1000px; height: 600px; overflow: hidden; border-radius: 20px;">
+                    <img src="{% static 'img/señas.jpeg' %}" class="w-full h-full object-cover" style="border-radius: 20px;">
+                </div>
+            </div>
+
+            <div id="guia" class="mx-auto py-5 border border-gray-300 rounded-lg flex items-center" style="background-color: hsla(30, 50%, 90%, 1); width: 100%; height: 50%;" data-aos="fade-up">
+                <!-- Contenedor de Imagen -->
+                <div class="w-1/2" style="padding: 80px; width: 1000px; height: 600px; overflow: hidden; border-radius: 20px;">
+                    <img src="{% static 'img/guia.jpeg' %}" class="w-full h-full object-cover" style="border-radius: 20px;">
+                </div>            
+                <!-- Contenedor de Texto -->
+                <div class="w-1/2 px-8" style="padding: 80px;">
+                    <h2 class="text-4xl font-bold mb-4" style="font-family: 'Jeju Hallasan', cursive; color: #68714B;">Guía</h2>
+                    <p class="text-lg text-justify leading-relaxed" style="color: #585858; font-family: 'Inter', sans-serif;">
+                        En esta página encontrarás cursos diseñados para introducirte en el fascinante mundo del lengua de señas. Te guiaremos paso a paso a 
+                        través de los conceptos básicos, desde el abecedario hasta colores, permitiéndote adquirir las herramientas esenciales para 
+                        comunicarte de manera efectiva con personas sordas o con discapacidad auditiva. Nuestros cursos están estructurados para que aprendas de 
+                        manera clara y sencilla, sin importar tu nivel previo.
+                    </p>
+                </div>
+            </div>
+
+            <div id="ia" class="mx-auto py-5 border border-gray-300 rounded-lg flex items-center" style="background-color: hsla(74, 29%, 90%, 1); width: 100%; height: 50%;" data-aos="fade-up">
+                <!-- Contenedor de Texto -->
+                <div class="w-1/2 px-8" style="padding: 80px;">
+                    <h2 class="text-4xl font-bold mb-4" style="font-family: 'Jeju Hallasan', cursive; color: #68714B;">IA</h2>
+                    <p class="text-lg text-justify leading-relaxed" style="color: #585858; font-family: 'Inter', sans-serif;">
+                        La Inteligencia Artificial 'IA' es una tecnología que permite a las máquinas imitar habilidades humanas como el aprendizaje, 
+                        la toma de decisiones y la resolución de problemas. A través del análisis de datos y algoritmos avanzados, la IA nos ayuda a 
+                        realizar tareas de manera más rápida y eficiente, transformando sectores como la salud, la educación y la industria en general.
+                    </p>
+                </div>
+                <!-- Contenedor de Imagen -->
+                <div class="w-1/2" style="padding: 80px; width: 1000px; height: 600px; overflow: hidden; border-radius: 20px;">
+                    <img src="{% static 'img/IA.jpeg' %}" class="w-full h-full object-cover" style="border-radius: 20px;">
+                </div>
+            </div>
+
+            <!-- Más secciones como Lengua de Señas, Guía, IA... -->
+        {% endif %}
+    </section>
+
+    <!-- Pie de página -->
+    <div class="container-fluid py-3 px-sm-3 px-lg-5" style="background-color: #CCCCCC; margin-top: 0; color: #585858; border-bottom: none; box-shadow: none; margin: 0;">
+        <div class="row">
+            <div class="col-lg-7 col-md-12">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <h5 class="text-primary text-uppercase mb-4" style="letter-spacing: 10px;">Contáctanos</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><i class="fa fa-map-marker-alt mr-2"></i>Milagro, Ecuador, LA</p>
+                                <p><i class="fa fa-phone-alt mr-2"></i>+593 98 669 7766</p>
+                                <p><i class="fa fa-envelope mr-2"></i>dullnane@gmail.com</p>
+                            </div>
+                            <div class="col-md-6" style="position: relative; left: 150px; top: 30px;">
+                                <a class="btn btn-outline-light btn-square mr-2" href="https://www.facebook.com/dulcemaria.villacis?mibextid=ZbWKwL" style="width: 60px; height: 50px; font-size: 24px; border-color: #585858; color: #585858;">
+                                    <i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-outline-light btn-square" href="https://www.instagram.com/dullmarip/profilecard/?igsh=cmtrenk1dWtnNmk3" style="width: 60px; height: 50px; font-size: 24px; border-color: #585858; color: #585858;">
+                                    <i class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> 
         </div>
-    {% endif %}
-</section>
-
-<!-- Fullscreen Selection Section -->
-<section id="selection-section" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" style="backdrop-filter: blur(10px);">
-    {% if not user.is_authenticated %}
-        <div class="flex justify-center mt-10">
-            <a href="{% url 'security:auth_login' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 1cm; text-decoration: none;">
-                <div class="flex flex-col items-center justify-center h-full">
-                    <i class="fas fa-user-shield mb-4 text-8xl" style="color: #474747;"></i>
-                    <p class="text-xl font-semibold mt-3 text-black">Administrador</p>
+        <div class="container-fluid py-2" style="background-color: #CCCCCC; border-top: none">
+            <div class="row">
+                <div class="col-lg-18 text-center text-md-left mb-3 mb-md-0">
+                    <p class="m-0" style="color: #585858;">&copy; <a href="#" style="color: #f97316;">Domain Name</a>. All Rights Reserved. Designed by <a href="#" style="color: #f97316;">DULLNANE</a></p>
                 </div>
-            </a>            
-            <a href="{% url 'security:auth_login' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 1cm; text-decoration: none;">
-                <div class="flex flex-col items-center justify-center h-full">
-                    <i class="fas fa-user mb-4 text-8xl" style="color: #474747;"></i>
-                    <p class="text-xl font-semibold mt-3 text-black">Usuario</p>
-                </div>
-            </a>
-            <a href="{% url 'home' %}" class="card bg-white shadow-xl rounded-xl text-center p-10 hover:scale-105 transform transition duration-300 w-80 mx-10" style="margin-right: 0; text-decoration: none;">
-                <div class="flex flex-col items-center justify-center h-full">
-                    <i class="fa-solid fa-users mb-4 text-8xl" style="color: #474747;"></i>
-                    <p class="text-xl font-semibold mt-3 text-black">Invitado</p>
-                </div>
-            </a>            
+            </div>
         </div>
-    {% endif %}
-</section>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
+    <script>
+        function showSelection() {
+            // Ocultar el carrusel y la sección de información
+            document.getElementById('header-carousel').style.display = 'none';
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    function showSelection() {
-        // Ocultar el carrusel y la sección de información
-        document.getElementById('header-carousel').style.display = 'none';
-
-        // Mostrar la sección de selección de usuarios
-        document.getElementById('selection-section').classList.remove('hidden');
-    }
-</script>
-
+            // Mostrar la sección de selección de usuarios
+            document.getElementById('selection-section').classList.remove('hidden');
+        }
+    </script>
 {% endblock %}

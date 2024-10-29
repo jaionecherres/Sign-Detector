@@ -13,7 +13,7 @@ from django.contrib.auth import update_session_auth_hash
 def profile(request):
     data = {"title1": "IC - Perfil",
             "title2": "Perfil de Usuario"}
-    return render(request, 'core/profile.html', data)
+    return render(request, 'core/editperfil/profile.html', data)
 
 #  Actualizar perfil 
 @login_required
@@ -32,7 +32,7 @@ def update_profile(request):
     else:
         form = CustomUserUpdateForm(instance=request.user)
     
-    return render(request, 'core/update_profile.html', {'form': form, **data})
+    return render(request, 'core/editperfil/update_profile.html', {'form': form, **data})
 
 @login_required
 def signout(request):

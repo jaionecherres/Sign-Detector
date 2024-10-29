@@ -125,30 +125,113 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const popup = document.getElementById('popup-message');
+            const cameraPermissionPopup = document.createElement('div');
+            cameraPermissionPopup.classList.add('popup-message');
+            cameraPermissionPopup.innerHTML = `
+                <div class="popup-content">
+                    <h2>Activar Cámara</h2>
+                    <p>Para realizar el nivel, necesitamos acceso a tu cámara. ¿Deseas encender la cámara ahora?</p>
+                    <button id="allow-camera-button" class="btn-primary">Permitir</button>
+                    <button id="deny-camera-button" class="btn-secondary">No permitir</button>
+                </div>
+            `;
+            document.body.appendChild(cameraPermissionPopup);
+        
             const contentContainer = document.getElementById('content-container');
             const startButton = document.getElementById('start-button');
             const successMessage = document.getElementById('success-message');
             const nextButton = document.getElementById('next-button');
             const numeroActual = document.getElementById('numero-actual');
             const imagenNumero = document.getElementById('imagen-numero');
+            const allowCameraButton = document.getElementById('allow-camera-button');
+            const denyCameraButton = document.getElementById('deny-camera-button');
         
-            // Al hacer clic en "Comenzar", se oculta el popup inicial y se muestra el contenido principal
+            cameraPermissionPopup.style.display = 'none'; // Mantener oculto el mensaje de activación de cámara inicialmente
+        
+            // Verificar si el nivel ya está completado al cargar la página
+            $.ajax({
+                url: "{% url 'core:numeros' %}",  
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'completado') {
+                        // Mostrar directamente el mensaje de que ya se completó el nivel
+                        Swal.fire({
+                            title: 'Nivel completado',
+                            text: response.mensaje,
+                            icon: 'info',
+                            confirmButtonText: 'Ir al inicio'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Redirigir al feedback o a otra página
+                                window.location.href = response.redirigir;
+                            }
+                        });
+                    } else {
+                        // Si el nivel no está completado, mostrar el mensaje de bienvenida
+                        popup.style.display = 'flex'; // Mostrar el mensaje emergente de bienvenida
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error al verificar el progreso:', error);
+                }
+            });
+        
+            // Al hacer clic en "Comenzar", mostrar el mensaje para habilitar la cámara
             startButton.onclick = function() {
-                popup.style.display = 'none'; // Ocultar el mensaje emergente
-                contentContainer.style.display = 'flex'; // Mostrar el contenido en modo flex
-                iniciarDeteccion();  // Iniciar la detección de señas después de hacer clic en "Comenzar"
+                popup.style.display = 'none'; // Ocultar el popup inicial
+                cameraPermissionPopup.style.display = 'flex'; // Mostrar el mensaje de permiso para la cámara
             };
-
+        
+            // Si el usuario permite el uso de la cámara
+            allowCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none'; // Ocultar el popup de la cámara
+                contentContainer.style.display = 'flex'; // Mostrar el contenido del nivel
+                iniciarDeteccion();  // Iniciar la detección de señas y activar la cámara
+            };
+        
+            // Si el usuario no permite el uso de la cámara
+            denyCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none'; // Ocultar el popup de la cámara
+                Swal.fire({
+                    title: 'Cámara requerida',
+                    text: 'Necesitas activar la cámara para poder realizar este nivel.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    // Redirigir al usuario fuera del nivel o bloquear el acceso
+                    window.location.href = '/levels/';
+                });
+            };
+        
             //Función para mostrar el mensaje de éxito cuando la seña es correcta
             function mostrarMensajeExito() {
                 successMessage.style.display = 'flex'; 
             }
-
+        
             //Función para enviar la seña detectada al servidor para validación
             function onSenalDetectada(senal_detectada) {
                 console.log("Seña detectada:", senal_detectada);
@@ -175,14 +258,14 @@
                                 });
                             } else {
                                 mostrarMensajeExito();
-
+        
                                 nextButton.onclick = function() {
                                     console.log('Número actualizado:', response.nuevo_numero); 
                                     console.log('URL de la nueva imagen:', response.nueva_imagen); 
                                 
                                     if (response.nueva_imagen) {
-                                        numeroActual.innerText = response.nuevo_numero;  //Actualiza el número
-                                        imagenNumero.src = response.nueva_imagen;  //Actualiza la imagen
+                                        numeroActual.innerText = response.nuevo_numero;  // Actualiza el número
+                                        imagenNumero.src = response.nueva_imagen;  // Actualiza la imagen
                                     } else {
                                         console.log("No se encontró una nueva imagen en la respuesta.");
                                     }
@@ -198,8 +281,8 @@
                         console.log('Error al enviar la seña detectada:', error);
                     }                 
                 });
-            }                                                         
-
+            }
+        
             //Función para hacer una petición al backend y detectar la seña en tiempo real
             function detectarSenalDesdeBackend() {
                 const tipoLeccion = '{{ tipo_leccion }}'; 
@@ -225,12 +308,12 @@
                     }
                 });
             }                                
-
+        
             //Función para iniciar la detección de señas a intervalos regulares
             function iniciarDeteccion() {
                 setInterval(detectarSenalDesdeBackend, 2000);  //Llama a la IA cada 2 segundos
             }
-        });
+        });        
     </script>    
 </body>
 {% endblock %}

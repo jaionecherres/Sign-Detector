@@ -193,20 +193,21 @@ def feedback_nivel(request, nivel_id):
 
 def alfabeto(request):
     abecedario = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    letra_actual = request.session.get('letra_actual', 'A')
+    letra_actual = request.session.get('letra_actual', 'Y')  # Se puede iniciar desde 'Y'
 
+    # Obtener el nivel 1 y el progreso del usuario
     alfabeto = Nivel.objects.get(orden=1)
-    progreso, creado = Progreso.objects.get_or_create(usuario=request.user, nivel=alfabeto)
+    progreso, _ = Progreso.objects.get_or_create(usuario=request.user, nivel=alfabeto)
 
     # Verificar si el usuario ya completó el nivel
     if progreso.completado:
-        # Redirigir al feedback si el nivel ya está completado
         return JsonResponse({
             'status': 'completado',
-            'mensaje': 'Ya completaste el Nivel 1. Puedes dirigirte al feedback.',
-            'redirigir': '/feedback/'
+            'mensaje': 'Ya completaste el Nivel 1! Puede dirigirse a su feedback',
+            'redirigir': '/levels/'
         })
 
+    # Intentar obtener la señal de la letra actual
     try:
         senal_inicial = Senal.objects.get(name=letra_actual)
         senal_detectada = senal_inicial.imagen.url
@@ -216,22 +217,26 @@ def alfabeto(request):
         logger.error(f"No se encontró imagen para la letra {letra_actual}")
 
     if request.method == 'GET':
-        return render(request, 'alfabeto.html', {'senal_detectada': senal_detectada, 'letra_actual': letra_actual, 'progreso': progreso})
+        return render(request, 'alfabeto.html', {
+            'senal_detectada': senal_detectada,
+            'letra_actual': letra_actual,
+            'progreso': progreso
+        })
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         senal_realizada = request.POST.get('senal_realizada')
         logger.info(f"Seña realizada: {senal_realizada}, letra actual: {letra_actual}")
 
+        # Verificar si la seña realizada es correcta
         if senal_realizada == letra_actual:
             indice_actual = abecedario.index(letra_actual)
 
             if letra_actual == 'Z':
-                # Marcar el progreso del nivel como completado
+                # Marcar el nivel como completado y desbloquear el siguiente
                 progreso.completado = True
                 progreso.fecha_completado = now()
                 progreso.save()
 
-                # Desbloquear el siguiente nivel
                 try:
                     siguiente_nivel = Nivel.objects.get(orden=alfabeto.orden + 1)
                     primera_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
@@ -254,7 +259,7 @@ def alfabeto(request):
 
                 # Actualizar el dashboard del usuario
                 try:
-                    dashboard, created = Dashboard.objects.get_or_create(usuario=request.user)
+                    dashboard, _ = Dashboard.objects.get_or_create(usuario=request.user)
                     dashboard.nivel_actual = siguiente_nivel
                     dashboard.actualizar_dashboard()
                 except Exception as e:
@@ -263,18 +268,19 @@ def alfabeto(request):
                         'mensaje': f'Error al actualizar el dashboard: {str(e)}'
                     })
 
-                # Redirigir a la página de niveles donde se mostrará el feedback desbloqueado
                 return JsonResponse({
                     'status': 'success',
                     'mensaje': '¡Felicidades! Ha completado el Nivel 1. ¡Prepárese para el siguiente nivel!',
                     'completado': True,
-                    'redirigir': '/levels/'  # Redirigir al listado de niveles
+                    'redirigir': '/levels/'
                 })
 
+            # Avanzar a la siguiente letra
             if indice_actual < len(abecedario) - 1:
                 letra_actual = abecedario[indice_actual + 1]
             request.session['letra_actual'] = letra_actual
 
+            # Cargar la imagen de la nueva letra
             try:
                 senal_inicial = Senal.objects.get(name=letra_actual)
                 nueva_imagen = senal_inicial.imagen.url
@@ -288,7 +294,7 @@ def alfabeto(request):
                 'nueva_letra': letra_actual,
                 'nueva_imagen': nueva_imagen,
                 'mensaje': '¡Seña correcta! Presiona el botón para continuar con la siguiente letra.',
-                'completado': False 
+                'completado': False
             })
 
         return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
@@ -300,6 +306,13 @@ def numeros(request):
     
     numeros = Nivel.objects.get(orden=2)
     progreso = Progreso.objects.filter(usuario=request.user, nivel=numeros).first()
+    
+    if progreso.completado:
+        return JsonResponse({
+            'status': 'completado',
+            'mensaje': 'Ya completaste el Nivel 2! Puede dirigirse a su feedback',
+            'redirigir': '/levels/'
+        })
 
     try:
         senal_inicial = Senal.objects.get(name=str(numero_actual))
@@ -409,8 +422,8 @@ def colores(request):
     if progreso.completado:
         return JsonResponse({
             'status': 'completado',
-            'mensaje': 'Ya completaste el Nivel de Colores. Puedes dirigirte al feedback.',
-            'redirigir': '/feedback/'
+            'mensaje': 'Ya completaste el Nivel 3! Puedes dirigirse al feedback.',
+            'redirigir': '/levels/'
         })
 
     try:
