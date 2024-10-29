@@ -193,7 +193,7 @@ def feedback_nivel(request, nivel_id):
 
 def alfabeto(request):
     abecedario = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    letra_actual = request.session.get('letra_actual', 'Y')  # Se puede iniciar desde 'Y'
+    letra_actual = request.session.get('letra_actual', 'A')  
 
     # Obtener el nivel 1 y el progreso del usuario
     alfabeto = Nivel.objects.get(orden=1)

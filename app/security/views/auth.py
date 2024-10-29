@@ -11,14 +11,14 @@ from django.contrib.auth import update_session_auth_hash
 
 # ----------------- Perfil -----------------
 def profile(request):
-    data = {"title1": "IC - Perfil",
+    data = {"title1": "DN - Perfil",
             "title2": "Perfil de Usuario"}
     return render(request, 'core/editperfil/profile.html', data)
 
 #  Actualizar perfil 
 @login_required
 def update_profile(request):
-    data = {"title1": "IC - Actualizar Perfil", "title2": "Actualizar Perfil"}
+    data = {"title1": "DN - Actualizar Perfil", "title2": "Actualizar Perfil"}
     
     if request.method == 'POST':
         form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user)
@@ -44,7 +44,7 @@ def signout(request):
 from django.contrib.auth.models import Group
 
 def signup(request):
-    data = {"title1": "IC - Registro", "title2": "Registro de Usuarios"}
+    data = {"title1": "DN - Registro", "title2": "Registro de Usuarios"}
     
     if request.method == "GET":
         # Renderiza el formulario vacío en caso de GET
@@ -70,7 +70,7 @@ def signup(request):
 
 # ----------------- Iniciar Sesión -----------------
 def signin(request):
-    data = {"title1": "IC - Login", "title2": "Inicio de Sesión"}
+    data = {"title1": "DN - Login", "title2": "Inicio de Sesión"}
     
     if request.method == "GET":
         success_messages = messages.get_messages(request)

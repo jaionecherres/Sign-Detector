@@ -9,6 +9,6 @@ class HomeTemplateView(TemplateView):
     
     def get_context_data(self, **kwargs):
         # context = super().get_context_data(**kwargs)
-        context = {"title1": "IC - Inicio"}
+        context = {"title1": "DN - Inicio"}
         
         return context

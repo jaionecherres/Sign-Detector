@@ -8,7 +8,7 @@ class FeedbackTemplateView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title1"] = "IC - Feedback"
+        context["title1"] = "DN - Feedback"
 
         # Obtener todos los niveles
         niveles = Nivel.objects.all().order_by('orden')

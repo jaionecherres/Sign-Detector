@@ -7,7 +7,7 @@ class ModuloTemplateView(PermissionMixin,TemplateView):
    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title1"]= "IC - Modulos"
+        context["title1"]= "DN - Modulos"
         context["title2"]= "Modulos Disponibles"
         MenuModule(self.request).fill(context)
         print(context)
