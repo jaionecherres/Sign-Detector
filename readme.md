@@ -6,7 +6,7 @@ Este proyecto tiene como objetivo capturar y reconocer señas a través de la in
 Este sistema emplea OpenCV, scikit-learn y Django para capturar y procesar imágenes de señas en tiempo real, ofreciendo retroalimentación inmediata sobre la precisión de cada seña. Asimismo, permite a los usuarios avanzar a través de diferentes niveles (alfabeto, números, colores), brindándoles la oportunidad de mejorar gradualmente sus habilidades en el lenguaje de señas.
 
 # Instalación
-1.	Acceder al repositorio público de GitHub: https://github.com/jaionecherres/Sign-Detector.git
+1.	Clone el repositorio: ´https://github.com/jaionecherres/Sign-Detector.git´
 2.	Extraer los archivos en una carpeta nueva de su directorio.
 3.	Abra una terminal de comandos en el directorio donde creó la carpeta, dentro de la carpeta se deben de visualizar los archivos del repositorio.
 
