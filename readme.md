@@ -6,12 +6,14 @@ Este proyecto tiene como objetivo capturar y reconocer señas a través de la in
 Este sistema emplea OpenCV, scikit-learn y Django para capturar y procesar imágenes de señas en tiempo real, ofreciendo retroalimentación inmediata sobre la precisión de cada seña. Asimismo, permite a los usuarios avanzar a través de diferentes niveles (alfabeto, números, colores), brindándoles la oportunidad de mejorar gradualmente sus habilidades en el lenguaje de señas.
 
 # Instalación
-1.	Clone el repositorio: ´https://github.com/jaionecherres/Sign-Detector.git´
+1.	Clone el repositorio: https://github.com/jaionecherres/Sign-Detector.git
 2.	Extraer los archivos en una carpeta nueva de su directorio.
 3.	Abra una terminal de comandos en el directorio donde creó la carpeta, dentro de la carpeta se deben de visualizar los archivos del repositorio.
 
 4.	Cree y active un entorno virtual con los siguientes comandos:
-    `py -m venv ent_uni`
+
+  	`py -m venv ent_uni`
+  	
     `.\ent_uni\Scripts\activate`
 
 5.	Instale las dependencias necesarias:
@@ -20,7 +22,9 @@ Este sistema emplea OpenCV, scikit-learn y Django para capturar y procesar imág
 
 # Configuración de variables de entorno
 6.	En el directorio raíz del proyecto cree un archivo .env, comando:
-    `touch .env`
+
+  	`touch .env`
+  	
 7.	Abra el archivo .env y añada las siguientes variables con los valores correspondientes para la base de datos:
     Ejemplo:
   	
