@@ -400,6 +400,7 @@ def alfabeto(request):
 
         return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
  
+ 
 #*************************Vista específica para manejar la lección de números*************************
 def numeros(request):
     lista_numeros = list(range(10))
