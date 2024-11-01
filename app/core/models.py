@@ -47,7 +47,7 @@ class Progreso(models.Model):
     leccion = models.ForeignKey(Leccion, on_delete=models.CASCADE)
     completado = models.BooleanField(verbose_name='Completado', default=False)
     desbloqueado = models.BooleanField(default=False)
-    intentos = models.IntegerField(verbose_name='Número de Intentos', default=0)  
+    #intentos = models.IntegerField(verbose_name='Número de Intentos', default=0)  
 
     def __str__(self):
         return f'{self.usuario.username} - {self.nivel.name} - {"Desbloqueado" if self.desbloqueado else "Bloqueado"}'
@@ -63,11 +63,11 @@ class Progreso(models.Model):
         self.save()
     
     def desbloquear_siguiente_nivel(self):
-        # Encuentra el siguiente nivel basado en el orden
+        #Encuentra el siguiente nivel basado en el orden
         nivel_actual = self.nivel
         siguiente_nivel = Nivel.objects.filter(orden=nivel_actual.orden + 1).first()
         if siguiente_nivel:
-            # Desbloquear el siguiente nivel creando un progreso para el siguiente nivel
+            #Desbloquear el siguiente nivel creando un progreso para el siguiente nivel
             Progreso.objects.get_or_create(
                 usuario=self.usuario,
                 nivel=siguiente_nivel,

@@ -1,39 +1,168 @@
 {% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
 {% load static %}
-<title>{% block title %} {{ title1 }} {% endblock title %}</title>
 {% block content %}
+<body class="bodyevaluate hide-buttons">
+    <div class="card-eva">
+        <h1>Feedback de Alfabeto</h1>
 
-<div class="container-fluid py-30">
-    <div class="container py-10">
-        <div class="text-center mb-2">
-            <h5 class="text-primary text-uppercase mb-1" style="letter-spacing: 2px;">Feedback de Niveles</h5>
-            <h1 class="text-2xl">Consulta tus Feedbacks</h1>
-        </div>
-        <div class="row justify-content-center">
-            {% for item in niveles_con_feedback %}
-            <div class="col-lg-5 col-md-6 mb-4">
-                <div class="rounded overflow-hidden shadow-lg bg-white" style="height: 300px;">
-                    <div class="p-4 bg-gray-100">
-                        <div class="flex justify-between mb-3">
-                            <small class="text-gray-600">
-                                <i class="fa fa-users text-primary mr-2"></i>Nivel {{ item.nivel.orden }}
-                            </small>
-                        </div>
-
-                        {% if item.feedback_disponible %}
-                            <a class="text-sm block mt-2" href="{% url 'core:feedback_nivel' item.nivel.id %}">
-                                <u>Ver Feedback</u> <i class="fa fa-unlock ml-1"></i>
-                            </a>
-                        {% else %}
-                            <span class="text-sm block mt-2 text-gray-500">
-                                <u>Feedback bloqueado</u> <i class="fa fa-lock ml-1"></i>
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
+        <!-- Mensaje emergente inicial -->
+        <div id="popup-message" class="popup-message">
+            <div class="popup-content">
+                <h2>¡Bienvenido al Feedback de alfabeto!</h2>
+                <p>En este nivel, solo validaremos las vocales en lengua de señas. ¡Haz clic en comenzar para iniciar!</p>
+                <button id="start-vocales-button" class="btn-primary">Vocales</button><br>
+                <button id="start-consonantes-button" class="btn-primary">Consonantes</button>
             </div>
-            {% endfor %}
+        </div>
+
+        <!-- Mensaje emergente para indicar éxito en la detección de la seña -->
+        <div id="success-message" class="popup-message" style="display:none;">
+            <div class="popup-content">
+                <h2>¡Seña correcta!</h2>
+                <p>Has realizado la vocal correctamente. Haz clic en "Siguiente" para continuar con la siguiente vocal.</p>
+                <button id="next-button" class="btn-primary">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- Contenido principal oculto inicialmente -->
+        <div id="content-container" class="containereva" style="display:none;">
+            <!-- Cuadro izquierdo -->
+            <div class="left-box">
+                <h2>Vocal Actual: <span id="vocal-actual">{{ vocal_actual }}</span></h2>
+                <img id="imagen-vocal" src="{{ senal_detectada }}" alt="Imagen de la Vocal {{ vocal_actual }}" width="300px">
+            </div>            
+
+            <!-- Cuadro derecho con la cámara -->
+            <div class="camera-container">
+                <h2>Detector de Vocales IA</h2>
+                <!-- Transmisión en vivo de la cámara -->
+                <img src="{% url 'core:video_feed' 'alfabeto' %}" width="640" height="480" alt="Video en tiempo real">
+            </div>
         </div>
     </div>
-</div>
+
+    <style>
+        /* Mismos estilos del archivo original */
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('popup-message');
+            const contentContainer = document.getElementById('content-container');
+            const startVocalesButton = document.getElementById('start-vocales-button');
+            const startConsonantesButton = document.getElementById('start-consonantes-button');
+            const successMessage = document.getElementById('success-message');
+            const nextButton = document.getElementById('next-button');
+            const vocalActual = document.getElementById('vocal-actual');
+            const imagenVocal = document.getElementById('imagen-vocal');
+        
+            // Función para iniciar detección
+            function iniciarDeteccion() {
+                setInterval(detectarVocalDesdeBackend, 2000);  // Llama a la IA cada 2 segundos
+            }
+
+            // Al hacer clic en cualquiera de los botones, se oculta el popup inicial y se muestra el contenido principal
+            startVocalesButton.onclick = function() {
+                tipo_letras = 'vocales';  // Guardar en la sesión
+                iniciarFeedback(tipo_letras);
+            };
+
+            startConsonantesButton.onclick = function() {
+                tipo_letras = 'consonantes';  // Guardar en la sesión
+                iniciarFeedback(tipo_letras);
+            };
+
+            function iniciarFeedback(tipo_letras) {
+                popup.style.display = 'none'; 
+                contentContainer.style.display = 'flex'; 
+
+                // Hacer la llamada AJAX para configurar el tipo de letras
+                $.ajax({
+                    url: "{% url 'core:feedback_nivel' nivel.id %}",  // Ajustar URL para tu lógica
+                    type: 'POST',
+                    data: {
+                        'tipo_letras': tipo_letras,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        iniciarDeteccion();  // Iniciar la detección después de configurar el tipo de letras
+                    }
+                });
+            }
+
+            // Función para mostrar el mensaje de éxito cuando la seña es correcta
+            function mostrarMensajeExito() {
+                successMessage.style.display = 'flex'; 
+            }
+
+            // Función para enviar la vocal detectada al servidor para validación
+            function onVocalDetectada(vocal_detectada) {
+                $.ajax({
+                    url: "{% url 'core:feedback_nivel' nivel.id %}",  // URL del feedback de vocales/consonantes
+                    type: 'POST',
+                    data: {
+                        'vocal_realizada': vocal_detectada,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            if (response.completado) {
+                                Swal.fire({
+                                    title: '¡Felicidades!',
+                                    text: response.mensaje,
+                                    icon: 'success',
+                                    confirmButtonText: 'Ir al siguiente nivel'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = response.redirigir;
+                                    }
+                                });
+                            } else {
+                                mostrarMensajeExito(); // Mostrar el mensaje de éxito
+                                // Al hacer clic en el botón "Siguiente", actualizar la vocal actual y la imagen
+                                nextButton.onclick = function() {
+                                    vocalActual.innerText = response.nueva_vocal;
+                                    imagenVocal.src = response.nueva_imagen;
+                                    successMessage.style.display = 'none';
+                                };
+                            }
+                        } else {
+                            console.log('Vocal incorrecta');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al enviar la vocal detectada:', error);
+                    }
+                });
+            }            
+
+            // Función para hacer una petición al backend y detectar la vocal en tiempo real
+            function detectarVocalDesdeBackend() {
+                const tipoLeccion = 'alfabeto';  // Cambiado a 'alfabeto'
+                console.log("Tipo de lección enviado:", tipoLeccion); 
+            
+                $.ajax({
+                    url: "{% url 'core:detectar_senal' %}",
+                    type: 'POST',
+                    data: {
+                        'tipo_leccion': tipoLeccion,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            var vocal_detectada = response.vocal_detectada;
+                            onVocalDetectada(vocal_detectada);  // Procesar la vocal detectada
+                        } else {
+                            console.log('No se detectó ninguna vocal.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al detectar la vocal:', error);
+                    }
+                });
+            }                       
+        });
+    </script>    
+</body>
 {% endblock %}

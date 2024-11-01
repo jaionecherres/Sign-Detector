@@ -2,139 +2,61 @@
 {% block title %}{{ title1 }}{% endblock %}
 {% load static %}
 {% block content %}
-<body class="bodyevaluate hide-buttons">
-    <div class="card-eva">
-        <h1>Nivel 2</h1>
+<body class="bg-gray-100">
+    <div class="flex justify-center items-center flex-col min-h-screen">
+        <h1 class="text-3xl font-bold mb-6" style="font-family: 'Jomolhari', serif; margin-top: 50px;">Nivel 3</h1>
 
         <!-- Mensaje emergente inicial -->
-        <div id="popup-message" class="popup-message">
-            <div class="popup-content">
-                <h2>¡Bienvenido al Nivel de Colores!</h2>
-                <p>En este nivel aprenderá los colores en lengua de señas. ¡Haz clic en comenzar para iniciar!</p>
-                <button id="start-button" class="btn-primary">Comenzar</button>
+        <div id="popup-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50" style="margin-top: 90px;">
+            <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Bienvenido al Nivel 3!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">En este nivel aprenderá el abecedario en lengua de señas. ¡Haz clic en comenzar para iniciar!</p>
+                <button id="start-button" class="text-white py-2 px-4 rounded-md" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Comenzar</button>
             </div>
         </div>
 
         <!-- Mensaje emergente para indicar éxito en la detección del color -->
-        <div id="success-message" class="popup-message" style="display:none;">
-            <div class="popup-content">
-                <h2>¡Color correcto!</h2>
-                <p>Has realizado el color correctamente. Haz clic en "Siguiente" para continuar con el siguiente color.</p>
-                <button id="next-button" class="btn-primary">Siguiente</button>
+        <div id="success-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 hidden">
+            <div class="bg-white p-8 rounded-lg shadow-lg text-center w-80">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Color correcto!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Ha realizado la seña correctamente. Haz clic en "Siguiente" para continuar con la siguiente letra.</p>
+                <button id="next-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md" style="font-family: 'Jomolhari', serif;">Siguiente</button>
             </div>
         </div>
 
         <!-- Contenido principal oculto inicialmente -->
-        <div id="content-container" class="containereva" style="display:none;">
+        <div id="content-container" class="flex justify-center space-x-6 w-full max-w-5xl p-4 hidden" style="margin-top: -30px;">
             <!-- Cuadro izquierdo -->
-            <div class="left-box">
-                <h2>Color Actual: <span id="color-actual">{{ color_actual }}</span></h2>
-                <img id="imagen-color" src="{{ senal_detectada }}" alt="Imagen del Color {{ color_actual }}" width="300px">
+            <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Color Actual: <span id="color-actual">{{ color_actual }}</span></h2>
+                <img id="imagen-color" src="{{ senal_detectada }}" alt="Imagen del Color {{ color_actual }}" class="w-full h-auto">
             </div>            
 
             <!-- Cuadro derecho con la cámara -->
-            <div class="camera-container">
-                <h2>Detector de Colores IA</h2>
+            <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Detector de Señas</h2>
                 <!-- Transmisión en vivo de la cámara -->
-                <img src="{% url 'core:video_feed' 'colores' %}" width="640" height="480" alt="Video en tiempo real">
+                <img src="{% url 'core:video_feed' 'colores' %}" class="rounded-lg w-full h-auto" alt="Video en tiempo real">
             </div>
         </div>
     </div>
 
-    <style>
-        /* Estilos generales del body */
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Estilos del mensaje emergente */
-        .popup-message {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro semitransparente */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .popup-content {
-            background-color: #fff;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Sombra suave */
-            width: 350px;
-        }
-
-        .popup-content h2 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .popup-content p {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        /* Estilos del contenedor principal */
-        .containereva {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-        }
-
-        /* Estilos de los cuadros */
-        .left-box, .camera-container {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 48%;
-        }
-
-        .left-box h2, .camera-container h2 {
-            font-size: 22px;
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        .left-box p {
-            color: #666;
-            font-size: 16px;
-        }
-
-        .camera-container img {
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-    </style>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const popup = document.getElementById('popup-message');
+            const cameraPermissionPopup = document.createElement('div');
+            cameraPermissionPopup.classList.add('fixed', 'inset-0', 'flex', 'justify-center', 'items-center', 'bg-black', 'bg-opacity-50', 'z-50');
+            cameraPermissionPopup.innerHTML = `
+                <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9; margin-top: 90px;">
+                    <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Activar Cámara</h2>
+                    <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Para realizar el nivel, necesitamos acceso a tu cámara. ¿Deseas encender la cámara ahora?</p>
+                    <button id="allow-camera-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mr-4" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Permitir</button>
+                    <button id="deny-camera-button" class="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-md mt-2" style="background-color: #E37E18; font-family: 'Jomolhari', serif;">No permitir</button>
+                </div>
+            `;
+
+            document.body.appendChild(cameraPermissionPopup);
+            
             const contentContainer = document.getElementById('content-container');
             const startButton = document.getElementById('start-button');
             const successMessage = document.getElementById('success-message');
@@ -145,10 +67,30 @@
             // Al hacer clic en "Comenzar", se oculta el popup inicial y se muestra el contenido principal
             startButton.onclick = function() {
                 popup.style.display = 'none'; // Ocultar el mensaje emergente
-                contentContainer.style.display = 'flex'; // Mostrar el contenido en modo flex
+                cameraPermissionPopup.style.display = 'flex'; 
                 iniciarDeteccion();  // Iniciar la detección de señas después de hacer clic en "Comenzar"
             };
 
+            allowCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none'; // Ocultar el popup de la cámara
+                contentContainer.style.display = 'flex'; // Mostrar el contenido del nivel
+                iniciarDeteccion();  // Iniciar la detección de señas y activar la cámara
+            };
+        
+            // Si el usuario no permite el uso de la cámara
+            denyCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none'; // Ocultar el popup de la cámara
+                Swal.fire({
+                    title: 'Cámara requerida',
+                    text: 'Necesitas activar la cámara para poder realizar este nivel.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    // Redirigir al usuario fuera del nivel o bloquear el acceso
+                    window.location.href = '/levels/';
+                });
+            };
+            
             //Función para mostrar el mensaje de éxito cuando el color es correcto
             function mostrarMensajeExito() {
                 successMessage.style.display = 'flex'; 

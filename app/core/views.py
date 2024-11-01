@@ -7,16 +7,11 @@ from django.utils.timezone import now
 from app.security.models import Dashboard
 from .recognition import inference_classifier2 
 from django.shortcuts import get_object_or_404
-from django.urls import reverse  # Importa reverse para construir URLs dinámicamente
-import cv2
-import time
-import logging
-import traceback
+import cv2, time, logging
 
 logger = logging.getLogger(__name__)
 
 #*********************Configuración de la Cámara*********************
-
 camera = None
 
 #Función para abrir la cámara
@@ -51,15 +46,13 @@ def obtener_frame():
     global camera
     if camera is not None and camera.isOpened():
         ret, frame = camera.read()
-        if ret:
-            return frame
-        else:
+        if not ret:
             logger.error("No se pudo leer el frame de la cámara.")
             return None
+        return frame
     else:
-        logger.error("La cámara no está disponible.")
+        logger.error("La cámara no está disponible o no se abrió correctamente.")
         return None
-
 
 #*******************Generador para capturar frames de la cámara y hacer predicciones*******************
 # Generador para capturar los frames y hacer predicciones
@@ -74,7 +67,6 @@ def gen(tipo_modelo):
                 break  
             time.sleep(0.01)
 
-            # Elegir el modelo y etiquetas según el tipo_modelo
             if tipo_modelo == 'alfabeto':
                 model = inference_classifier2.model_alfabeto
                 labels_dict = inference_classifier2.labels_dict_alfabeto
@@ -85,15 +77,15 @@ def gen(tipo_modelo):
                 model = inference_classifier2.model_colores
                 labels_dict = inference_classifier2.labels_dict_colores
 
-            # Realizar predicción y dibujar el recuadro
+            #Realizar predicción y dibujar el recuadro
             predicted_sign = inference_classifier2.predict_sign(frame, model, labels_dict, tipo_modelo)
 
             if predicted_sign:
-                # Mostrar la señal predicha en el frame
+                #Mostrar la señal predicha en el frame
                 cv2.putText(frame, f"{predicted_sign}", (50, 50), 
                             cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
 
-            # Convertir el frame a formato JPEG y enviarlo al navegador
+            #Convertir el frame a formato JPEG y enviarlo al navegador
             _, jpeg = cv2.imencode('.jpg', frame)
             frame = jpeg.tobytes()
             yield (b'--frame\r\n'
@@ -133,12 +125,11 @@ def detectar_senal(request):
     if frame is None:
         return JsonResponse({'status': 'error', 'mensaje': 'No se pudo capturar la imagen'})
 
-    # Realizar predicción
     predicted_sign = inference_classifier2.predict_sign(frame, model, labels_dict, tipo_leccion)
 
     # Asegurarse de que la predicción es del tipo correcto
     if isinstance(predicted_sign, np.ndarray):
-        predicted_sign = predicted_sign.tolist()  # Convertir ndarray a lista si es necesario
+        predicted_sign = predicted_sign.tolist()  #Convertir ndarray a lista si es necesario
 
     if isinstance(predicted_sign, str):
         return JsonResponse({'status': 'success', 'senal_detectada': predicted_sign})
@@ -155,13 +146,12 @@ class LeccionDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context["title1"] = self.object.name
         tipo_leccion = self.object.nivel.name.lower()
-        #print(f"Tipo de lección: {tipo_leccion}") 
         context["tipo_leccion"] = tipo_leccion
         return context
 
     #Define la plantilla según el tipo de lección
     def get_template_names(self):
-        tipo_leccion = self.object.nivel.name.lower()  #Obtener el tipo de lección
+        tipo_leccion = self.object.nivel.name.lower() 
         if tipo_leccion == 'alfabeto':
             return ['core/lecciones/alfabeto.html']  
         elif tipo_leccion == 'numeros':
@@ -169,10 +159,10 @@ class LeccionDetailView(DetailView):
         elif tipo_leccion == 'colores':
             return ['core/lecciones/colores.html'] 
         else:
-            return ['core/lecciones/detail.html']  # Plantilla predeterminada 
-
+            return ['core/lecciones/detail.html']  #Plantilla predeterminada 
 
 def feedback_nivel(request, nivel_id):
+    # Obtener el nivel actual
     nivel = get_object_or_404(Nivel, id=nivel_id)
     usuario = request.user
 
@@ -180,30 +170,114 @@ def feedback_nivel(request, nivel_id):
     progreso = Progreso.objects.filter(usuario=usuario, nivel=nivel).first()
 
     if not progreso or not progreso.completado:
-        # Si el nivel no está completado, bloquear el acceso al feedback
         return JsonResponse({'status': 'error', 'mensaje': 'Debes completar el nivel antes de acceder al feedback.'})
 
-    # Obtener el feedback si existe
-    feedback = Feedback.objects.filter(usuario=usuario, nivel=nivel).first()
+    # Identificar si es el nivel de alfabeto, y manejar el feedback con vocales o consonantes
+    if nivel.orden == 1:  # Suponiendo que el Nivel 1 es el alfabeto
+        vocales = list('AEIOU')
+        consonantes = list('BCDFGHJKLMNPQRSTVWXYZ')
 
-    return render(request, 'core/lecciones/feedback.html', {'feedback': feedback, 'nivel': nivel})
+        # Si es una solicitud POST AJAX para establecer el tipo de letras
+        if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            tipo_letras = request.POST.get('tipo_letras', 'vocales')
+            request.session['tipo_letras'] = tipo_letras
+            return JsonResponse({'status': 'success', 'mensaje': f'Tipo de letras configurado a {tipo_letras}.'})
 
+        # Recuperar el tipo de letras (vocales o consonantes) de la sesión
+        tipo_letras = request.session.get('tipo_letras', 'vocales')
+        lista_letras = vocales if tipo_letras == 'vocales' else consonantes
+        letra_actual = request.session.get('letra_actual_feedback', lista_letras[0])
+
+        # Obtener la imagen correspondiente
+        try:
+            senal_inicial = Senal.objects.get(name=letra_actual)
+            senal_detectada = senal_inicial.imagen.url
+            logger.info(f"Imagen encontrada para la letra {letra_actual}: {senal_detectada}")
+        except Senal.DoesNotExist:
+            senal_detectada = "media/senales/default_image.png"
+            logger.error(f"No se encontró imagen para la letra {letra_actual}")
+
+        if request.method == 'GET':
+            return render(request, 'core/lecciones/feedback.html', {
+                'senal_detectada': senal_detectada,
+                'letra_actual': letra_actual,
+                'progreso': progreso,
+                'tipo_letras': tipo_letras,
+                'nivel': nivel
+            })
+
+        # Detectar la seña con AJAX para confirmar la letra (POST con tipo AJAX)
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
+            senal_realizada = request.POST.get('vocal_realizada')
+            logger.info(f"Seña realizada: {senal_realizada}, letra actual: {letra_actual}")
+
+            if senal_realizada == letra_actual:
+                indice_actual = lista_letras.index(letra_actual)
+
+                # Completar el feedback si es la última letra
+                if indice_actual == len(lista_letras) - 1:
+                    progreso.completado = True
+                    progreso.fecha_completado = now()
+                    progreso.save()
+
+                    return JsonResponse({
+                        'status': 'success',
+                        'mensaje': f'¡Felicidades! Has completado el feedback de {tipo_letras}.',
+                        'completado': True,
+                        'redirigir': '/levels/'
+                    })
+
+                # Avanzar a la siguiente letra
+                if indice_actual < len(lista_letras) - 1:
+                    letra_actual = lista_letras[indice_actual + 1]
+                request.session['letra_actual_feedback'] = letra_actual
+
+                try:
+                    senal_inicial = Senal.objects.get(name=letra_actual)
+                    nueva_imagen = senal_inicial.imagen.url
+                    logger.info(f"Nueva imagen encontrada para la letra {letra_actual}: {nueva_imagen}")
+                except Senal.DoesNotExist:
+                    nueva_imagen = None
+                    logger.error(f"No se encontró imagen para la letra {letra_actual}")
+
+                return JsonResponse({
+                    'status': 'success',
+                    'nueva_letra': letra_actual,
+                    'nueva_imagen': nueva_imagen,
+                    'mensaje': '¡Seña correcta! Presiona el botón para continuar.',
+                    'completado': False
+                })
+
+            return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
+
+    # Para otros niveles (números, colores, etc.)
+    else:
+        feedback = Feedback.objects.filter(usuario=usuario, nivel=nivel).first()
+        return render(request, 'core/lecciones/feedback.html', {
+            'feedback': feedback,
+            'nivel': nivel
+        })
 
 #***********************Vista específica para manejar la lección de alfabeto***********************
 
 def alfabeto(request):
-    abecedario = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    letra_actual = request.session.get('letra_actual', 'A')  
+    # Listas de vocales y consonantes
+    vocales = list('AEIOU')
+    consonantes = list('BCDFGHJKLMNPQRSTVWXYZ')
+    
+    # Determinar si está en la fase de vocales o consonantes
+    fase_actual = request.session.get('fase_actual', 'vocales')
+    letra_actual = request.session.get('letra_actual', vocales[0] if fase_actual == 'vocales' else consonantes[0])
 
-    # Obtener el nivel 1 y el progreso del usuario
+    # Obtener el nivel y progreso del usuario
     alfabeto = Nivel.objects.get(orden=1)
     progreso, _ = Progreso.objects.get_or_create(usuario=request.user, nivel=alfabeto)
 
-    # Verificar si el usuario ya completó el nivel
+    # Verificar si el nivel está completo
     if progreso.completado:
         return JsonResponse({
             'status': 'completado',
-            'mensaje': 'Ya completaste el Nivel 1! Puede dirigirse a su feedback',
+            'mensaje': 'Ya completaste el Nivel 1! Puedes dirigirte a tu feedback.',
             'redirigir': '/levels/'
         })
 
@@ -213,74 +287,101 @@ def alfabeto(request):
         senal_detectada = senal_inicial.imagen.url
         logger.info(f"Imagen encontrada para la letra {letra_actual}: {senal_detectada}")
     except Senal.DoesNotExist:
-        senal_detectada = None
+        senal_detectada = "media/senales/Captura_de_pantalla_2024-10-23_153532.png"
         logger.error(f"No se encontró imagen para la letra {letra_actual}")
 
     if request.method == 'GET':
         return render(request, 'alfabeto.html', {
             'senal_detectada': senal_detectada,
             'letra_actual': letra_actual,
+            'fase_actual': fase_actual,
             'progreso': progreso
         })
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         senal_realizada = request.POST.get('senal_realizada')
-        logger.info(f"Seña realizada: {senal_realizada}, letra actual: {letra_actual}")
+        logger.info(f"Seña realizada: {senal_realizada}, letra actual: {letra_actual}, fase actual: {fase_actual}")
 
         # Verificar si la seña realizada es correcta
         if senal_realizada == letra_actual:
-            indice_actual = abecedario.index(letra_actual)
+            if fase_actual == 'vocales':
+                # Si es la última vocal, pasar a consonantes y mostrar mensaje de transición
+                if letra_actual == vocales[-1]:
+                    fase_actual = 'consonantes'
+                    letra_actual = consonantes[0]
+                    request.session['fase_actual'] = fase_actual
+                    request.session['letra_actual'] = letra_actual
 
-            if letra_actual == 'Z':
-                # Marcar el nivel como completado y desbloquear el siguiente
-                progreso.completado = True
-                progreso.fecha_completado = now()
-                progreso.save()
+                    try:
+                        senal_inicial = Senal.objects.get(name=letra_actual)
+                        nueva_imagen = senal_inicial.imagen.url
+                    except Senal.DoesNotExist:
+                        nueva_imagen = None
 
-                try:
-                    siguiente_nivel = Nivel.objects.get(orden=alfabeto.orden + 1)
-                    primera_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
-                    if not primera_leccion_siguiente_nivel:
+                    return JsonResponse({
+                        'status': 'transition',
+                        'mensaje': '¡Has completado las vocales! Ahora pasará a las consonantes.',
+                        'nueva_fase': fase_actual,
+                        'nueva_letra': letra_actual,
+                        'nueva_imagen': nueva_imagen
+                    })
+                else:
+                    # Ir a la siguiente vocal
+                    letra_actual = vocales[vocales.index(letra_actual) + 1]
+            elif fase_actual == 'consonantes':
+                # Si es la última consonante, marcar el nivel como completado y desbloquear el siguiente
+                if letra_actual == consonantes[-1]:
+                    progreso.completado = True
+                    progreso.fecha_completado = now()
+                    progreso.save()
+
+                    # Intentar desbloquear el siguiente nivel
+                    try:
+                        siguiente_nivel = Nivel.objects.get(orden=alfabeto.orden + 1)
+                        primera_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
+                        if not primera_leccion_siguiente_nivel:
+                            return JsonResponse({
+                                'status': 'error',
+                                'mensaje': 'El siguiente nivel no tiene una lección asociada.'
+                            })
+
+                        Progreso.objects.get_or_create(
+                            usuario=request.user,
+                            nivel=siguiente_nivel,
+                            defaults={'desbloqueado': True, 'leccion': primera_leccion_siguiente_nivel}
+                        )
+                    except Nivel.DoesNotExist:
                         return JsonResponse({
                             'status': 'error',
-                            'mensaje': 'El siguiente nivel no tiene una lección asociada.'
+                            'mensaje': 'No se pudo encontrar el siguiente nivel.'
                         })
 
-                    Progreso.objects.get_or_create(
-                        usuario=request.user,
-                        nivel=siguiente_nivel,
-                        defaults={'desbloqueado': True, 'leccion': primera_leccion_siguiente_nivel}
-                    )
-                except Nivel.DoesNotExist:
+                    # Actualizar el dashboard del usuario
+                    try:
+                        dashboard, _ = Dashboard.objects.get_or_create(usuario=request.user)
+                        dashboard.nivel_actual = siguiente_nivel
+                        dashboard.actualizar_dashboard()
+                    except Exception as e:
+                        return JsonResponse({
+                            'status': 'error',
+                            'mensaje': f'Error al actualizar el dashboard: {str(e)}'
+                        })
+
                     return JsonResponse({
-                        'status': 'error',
-                        'mensaje': 'No se pudo encontrar el siguiente nivel.'
+                        'status': 'success',
+                        'mensaje': '¡Felicidades! Has completado el Nivel 1. ¡Prepárate para el siguiente nivel!',
+                        'completado': True,
+                        'redirigir': '/levels/'
                     })
+                else:
+                    # Ir a la siguiente consonante
+                    letra_actual = consonantes[consonantes.index(letra_actual) + 1]
 
-                # Actualizar el dashboard del usuario
-                try:
-                    dashboard, _ = Dashboard.objects.get_or_create(usuario=request.user)
-                    dashboard.nivel_actual = siguiente_nivel
-                    dashboard.actualizar_dashboard()
-                except Exception as e:
-                    return JsonResponse({
-                        'status': 'error',
-                        'mensaje': f'Error al actualizar el dashboard: {str(e)}'
-                    })
-
-                return JsonResponse({
-                    'status': 'success',
-                    'mensaje': '¡Felicidades! Ha completado el Nivel 1. ¡Prepárese para el siguiente nivel!',
-                    'completado': True,
-                    'redirigir': '/levels/'
-                })
-
-            # Avanzar a la siguiente letra
-            if indice_actual < len(abecedario) - 1:
-                letra_actual = abecedario[indice_actual + 1]
+            # Guardar la fase y letra actual en la sesión
+            request.session['fase_actual'] = fase_actual
             request.session['letra_actual'] = letra_actual
 
-            # Cargar la imagen de la nueva letra
+            # Intentar cargar la imagen de la nueva letra
             try:
                 senal_inicial = Senal.objects.get(name=letra_actual)
                 nueva_imagen = senal_inicial.imagen.url
@@ -298,7 +399,7 @@ def alfabeto(request):
             })
 
         return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
-
+ 
 #*************************Vista específica para manejar la lección de números*************************
 def numeros(request):
     lista_numeros = list(range(10))
@@ -337,7 +438,7 @@ def numeros(request):
                 progreso.fecha_completado = now()
                 progreso.save()
 
-                # Desbloquear el siguiente nivel
+                #Desbloquear el siguiente nivel
                 try:
                     siguiente_nivel = Nivel.objects.get(orden=numeros.orden + 1)
                     segunda_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
@@ -358,7 +459,7 @@ def numeros(request):
                         'mensaje': 'No se pudo encontrar el siguiente nivel.'
                     })
 
-                # Actualizar el dashboard del usuario
+                #Actualizar el dashboard del usuario
                 try:
                     dashboard, created = Dashboard.objects.get_or_create(usuario=request.user)
                     dashboard.nivel_actual = siguiente_nivel
@@ -415,10 +516,9 @@ def colores(request):
     lista_colores = ['Rojo', 'Verde', 'Azul', 'Amarillo', 'Naranja', 'Morado', 'Negro', 'Blanco', 'Rosa', 'Cafe']
     color_actual = request.session.get('color_actual', 'Rojo')
 
-    colores = Nivel.objects.get(orden=3)  # Suponiendo que los colores están en el Nivel 2
+    colores = Nivel.objects.get(orden=3) 
     progreso, creado = Progreso.objects.get_or_create(usuario=request.user, nivel=colores)
 
-    # Verificar si el usuario ya completó el nivel
     if progreso.completado:
         return JsonResponse({
             'status': 'completado',
@@ -445,12 +545,12 @@ def colores(request):
             indice_actual = lista_colores.index(color_actual)
 
             if color_actual == 'Cafe':
-                # Marcar el progreso del nivel como completado
+                #Marcar el progreso del nivel como completado
                 progreso.completado = True
                 progreso.fecha_completado = now()
                 progreso.save()
 
-                # Desbloquear el siguiente nivel
+                #Desbloquear el siguiente nivel
                 try:
                     siguiente_nivel = Nivel.objects.get(orden=colores.orden + 1)
                     primera_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
@@ -471,7 +571,7 @@ def colores(request):
                         'mensaje': 'No se pudo encontrar el siguiente nivel.'
                     })
 
-                # Actualizar el dashboard del usuario
+                #Actualizar el dashboard del usuario
                 try:
                     dashboard, created = Dashboard.objects.get_or_create(usuario=request.user)
                     dashboard.nivel_actual = siguiente_nivel
@@ -482,7 +582,6 @@ def colores(request):
                         'mensaje': f'Error al actualizar el dashboard: {str(e)}'
                     })
 
-                # Redirigir a la página de niveles donde se mostrará el feedback desbloqueado
                 return JsonResponse({
                     'status': 'success',
                     'mensaje': '¡Felicidades! Has completado el Nivel de Colores. ¡Prepárate para el siguiente nivel!',
