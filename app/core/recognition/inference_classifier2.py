@@ -213,3 +213,4 @@ def video_feed(request, tipo_modelo):
         print("Cámara liberada correctamente.")
 
 
+

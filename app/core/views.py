@@ -481,6 +481,7 @@ def numeros(request):
             'fase_actual': fase_actual,
         })
     
+    
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         senal_realizada = request.POST.get('senal_realizada')
         logger.info(f"Seña realizada: {senal_realizada}, número actual: {numero_actual}, fase actual: {fase_actual}")
