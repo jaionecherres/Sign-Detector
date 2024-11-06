@@ -44,13 +44,61 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const popup = document.getElementById('popup-message');
+            const cameraPermissionPopup = document.createElement('div');
+            cameraPermissionPopup.classList.add('fixed', 'inset-0', 'flex', 'justify-center', 'items-center', 'bg-black', 'bg-opacity-50', 'z-50');
+            cameraPermissionPopup.innerHTML = `
+                <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9; margin-top: 90px;">
+                    <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Activar Cámara</h2>
+                    <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Para realizar el nivel, necesitamos acceso a tu cámara. ¿Deseas encender la cámara ahora?</p>
+                    <button id="allow-camera-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mr-4" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Permitir</button>
+                    <button id="deny-camera-button" class="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-md mt-2" style="background-color: #E37E18; font-family: 'Jomolhari', serif;">No permitir</button>
+                </div>
+            `;
+            document.body.appendChild(cameraPermissionPopup);
+    
             const contentContainer = document.getElementById('content-container');
             const successMessage = document.getElementById('success-message');
             const nextButton = document.getElementById('next-button');
             const letraActual = document.getElementById('letra-actual');
             const imagenLetra = document.getElementById('imagen-letra');
             const startLevelButton = document.getElementById('start-level-button');
-
+            const allowCameraButton = document.getElementById('allow-camera-button');
+            const denyCameraButton = document.getElementById('deny-camera-button');
+    
+            cameraPermissionPopup.style.display = 'none'; 
+    
+            // Cargar la letra y la imagen iniciales al cargar la página
+            cargarLetraYImagenInicial();
+    
+            // Función para cargar la letra y la imagen iniciales mediante GET
+            function cargarLetraYImagenInicial() {
+                $.ajax({
+                    url: "{% url 'core:alfabeto' %}",  // Asegúrate de que la URL apunta a la vista correcta
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            letraActual.innerText = response.letra_actual;
+                            imagenLetra.src = response.senal_detectada;
+                        } else if (response.status === 'completado') {
+                            Swal.fire({
+                                title: 'Nivel completado',
+                                text: response.mensaje,
+                                icon: 'info',
+                                confirmButtonText: 'Ir al feedback'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = response.redirigir;
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al cargar la letra y la imagen inicial:', error);
+                    }
+                });
+            }
+    
             // Verificar si el nivel ya está completado al cargar la página
             $.ajax({
                 url: "{% url 'core:alfabeto' %}",  
@@ -60,7 +108,6 @@
                 },
                 success: function(response) {
                     if (response.status === 'completado') {
-                        // Mostrar directamente el mensaje de que ya se completó el nivel
                         Swal.fire({
                             title: 'Nivel completado',
                             text: response.mensaje,
@@ -68,12 +115,10 @@
                             confirmButtonText: 'Ir al inicio'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Redirigir al feedback o a otra página
                                 window.location.href = response.redirigir;
                             }
                         });
                     } else {
-                        // Si el nivel no está completado, mostrar el mensaje de bienvenida
                         popup.style.display = 'flex'; // Mostrar el mensaje emergente de bienvenida
                     }
                 },
@@ -82,14 +127,29 @@
                 }
             });
             
-            // Iniciar la lección en la fase de vocales al hacer clic en "Comenzar"
             startLevelButton.onclick = function() {
                 popup.style.display = 'none';
+                cameraPermissionPopup.style.display = 'flex';
+            };
+    
+            allowCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none';
                 contentContainer.style.display = 'flex';
                 iniciarLeccion('vocales');
             };
-
-            // Función para cargar la letra y la imagen actuales
+        
+            denyCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none';
+                Swal.fire({
+                    title: 'Cámara requerida',
+                    text: 'Necesitas activar la cámara para poder realizar este nivel.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    window.location.href = '/levels/';
+                });
+            };
+    
             function cargarLetraYImagen(fase) {
                 $.ajax({
                     url: "{% url 'core:alfabeto' %}",
@@ -109,19 +169,16 @@
                     }
                 });
             }
-
-            // Función para iniciar la lección con la fase indicada
+    
             function iniciarLeccion(fase) {
                 cargarLetraYImagen(fase);
                 iniciarDeteccion(fase);
             }
-
-            // Función para mostrar el mensaje de éxito cuando la seña es correcta
+    
             function mostrarMensajeExito() {
                 successMessage.style.display = 'flex';
             }
-
-            // Función para enviar la seña detectada al servidor para validación
+    
             function onSenalDetectada(senal_detectada, fase) {
                 $.ajax({
                     url: "{% url 'core:alfabeto' %}",
@@ -133,14 +190,12 @@
                     },
                     success: function(response) {
                         if (response.status === 'transition') {
-                            // Transición automática de vocales a consonantes
                             Swal.fire({
                                 title: '¡Vocales completadas!',
                                 text: response.mensaje,
                                 icon: 'info',
                                 confirmButtonText: 'Continuar'
                             }).then(() => {
-                                // Cargar automáticamente la primera consonante y continuar la lección
                                 letraActual.innerText = response.nueva_letra;
                                 imagenLetra.src = response.nueva_imagen;
                                 iniciarDeteccion('consonantes');
@@ -174,8 +229,7 @@
                     }
                 });
             }            
-
-            //Función para hacer una petición al backend y detectar la seña en tiempo real
+    
             function detectarSenalDesdeBackend(fase) {
                 $.ajax({
                     url: "{% url 'core:detectar_senal' %}",
@@ -197,15 +251,14 @@
                     }
                 });
             }
-
-            // Función para iniciar la detección de señas con la fase actual
+    
             function iniciarDeteccion(fase) {
                 setInterval(function() {
                     detectarSenalDesdeBackend(fase);
                 }, 2000);
             }
         });
-    </script>    
+    </script>      
 </body>
 
 {% endblock %}

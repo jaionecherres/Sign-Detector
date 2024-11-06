@@ -1,0 +1,170 @@
+{% extends 'components/base.html' %}
+{% block title %}Feedback - Nivel de Alfabeto{% endblock %}
+{% load static %}
+{% block content %}
+<body class="bodyevaluate hide-buttons">
+    <div class="card-eva">
+        <h1>Feedback - Nivel de Alfabeto</h1>
+        
+        <!-- Mensaje emergente inicial -->
+        <div id="popup-message" class="popup-message">
+            <div class="popup-content">
+                <h2>¡Bienvenido al Feedback del Nivel!</h2>
+                <p>Completa las señas en orden alfabético. ¡Haz clic en comenzar para iniciar!</p>
+                <button id="start-button" class="btn-primary">Comenzar</button>
+            </div>
+        </div>
+        
+        <!-- Mensaje emergente para indicar éxito en la detección de la seña -->
+        <div id="success-message" class="popup-message" style="display:none;">
+            <div class="popup-content">
+                <h2>¡Seña correcta!</h2>
+                <p id="mensaje-exito">Has realizado la seña correctamente. Haz clic en "Siguiente" para continuar con la siguiente letra.</p>
+                <button id="next-button" class="btn-primary">Siguiente</button>
+            </div>
+        </div>
+        
+        <div id="letra-detectada" style="font-size: 20px; color: green; margin-top: 20px;">Letra Detectada: Ninguna</div><br>
+        
+        <!-- Contenedor para la transmisión de video en tiempo real -->
+        <div id="content-container" class="containereva" style="display:none;">
+            <!-- Cuadro izquierdo -->
+            <div class="left-box">
+                <h2>Letra Actual: <span id="letra-actual">{{ letra_actual }}</span></h2>
+                <img id="imagen-letra" src="{{ senal_detectada }}" alt="Imagen de la Letra {{ letra_actual }}" width="300px">
+            </div>            
+
+            <!-- Cuadro derecho con la cámara -->
+            <div class="camera-container">
+                <h2>Detector de Señales IA</h2>
+                <!-- Transmisión en vivo de la cámara -->
+                <img src="{% url 'core:video_feed' 'alfabeto' %}" width="640" height="480" alt="Video en tiempo real">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('popup-message');
+            const contentContainer = document.getElementById('content-container');
+            const startButton = document.getElementById('start-button');
+            const successMessage = document.getElementById('success-message');
+            const nextButton = document.getElementById('next-button');
+            const letraActual = document.getElementById('letra-actual');
+            const imagenLetra = document.getElementById('imagen-letra');
+            const letraDetectada = document.getElementById("letra-detectada");
+
+            // Mostrar el contenido principal al hacer clic en "Comenzar"
+            startButton.onclick = function() {
+                popup.style.display = 'none';
+                contentContainer.style.display = 'flex';
+                iniciarLeccion();  // Llamar sin parámetro para que cargue desde la letra A
+            };
+
+            // Función para cargar la letra y la imagen actuales (inicializa en la letra A si es el comienzo)
+            function cargarLetraYImagen() {
+                $.ajax({
+                    url: "{% url 'core:feedback_nivel' nivel.id %}",
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            letraActual.innerText = response.nueva_letra;
+                            imagenLetra.src = response.nueva_imagen;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al cargar la letra y la imagen:', error);
+                    }
+                });
+            }
+
+            // Función para iniciar la lección desde la primera letra
+            function iniciarLeccion() {
+                cargarLetraYImagen();
+                iniciarDeteccion();
+            }
+
+            // Función para mostrar el mensaje de éxito cuando la seña es correcta
+            function mostrarMensajeExito(mensaje) {
+                document.getElementById("mensaje-exito").innerText = mensaje;
+                successMessage.style.display = 'flex';
+            }
+
+            // Función para enviar la seña detectada al servidor para validación
+            function onSenalDetectada(senal_detectada) {
+                $.ajax({
+                    url: "{% url 'core:feedback_nivel' nivel.id %}",
+                    type: 'POST',
+                    data: {
+                        'senal_realizada': senal_detectada,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            if (response.completado) {
+                                Swal.fire({
+                                    title: '¡Felicidades!',
+                                    text: response.mensaje,
+                                    icon: 'success',
+                                    confirmButtonText: 'Ir al menú de niveles'
+                                }).then(() => {
+                                    window.location.href = response.redirigir;
+                                });
+                            } else {
+                                mostrarMensajeExito(response.mensaje);
+                                nextButton.onclick = function() {
+                                    letraActual.innerText = response.nueva_letra;
+                                    imagenLetra.src = response.nueva_imagen;
+                                    successMessage.style.display = 'none';
+                                };
+                            }
+                        } else {
+                            console.log('Seña incorrecta');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al enviar la seña detectada:', error);
+                    }
+                });
+            }
+
+            // Función para hacer una petición al backend y detectar la seña en tiempo real
+            function detectarSenalDesdeBackend() {
+                $.ajax({
+                    url: "{% url 'core:detectar_senal' %}",
+                    type: 'POST',
+                    data: {
+                        'tipo_leccion': 'alfabeto',
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        console.log("Respuesta del servidor:", response); // Depuración
+                        if (response.status === 'success') {
+                            var senal_detectada = response.senal_detectada;
+                            
+                            // Asegúrate de que la variable tenga un valor antes de asignarla
+                            if (senal_detectada) {
+                                letraDetectada.innerText = `Letra Detectada: ${senal_detectada}`;
+                                onSenalDetectada(senal_detectada);
+                            } else {
+                                letraDetectada.innerText = "Letra Detectada: Ninguna";
+                            }
+                        } else {
+                            console.log('No se detectó ninguna seña.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al detectar la seña:', error);
+                    }
+                });
+            }
+
+            // Función para iniciar la detección de señas en la lección
+            function iniciarDeteccion() {
+                setInterval(detectarSenalDesdeBackend, 2000);
+            }
+        });
+    </script>    
+</body>
+{% endblock %}

@@ -162,101 +162,142 @@ class LeccionDetailView(DetailView):
             return ['core/lecciones/detail.html']  #Plantilla predeterminada 
 
 def feedback_nivel(request, nivel_id):
-    # Obtener el nivel actual
     nivel = get_object_or_404(Nivel, id=nivel_id)
     usuario = request.user
 
     # Verificar si el nivel fue completado para permitir el acceso al feedback
     progreso = Progreso.objects.filter(usuario=usuario, nivel=nivel).first()
-
     if not progreso or not progreso.completado:
         return JsonResponse({'status': 'error', 'mensaje': 'Debes completar el nivel antes de acceder al feedback.'})
 
-    # Identificar si es el nivel de alfabeto, y manejar el feedback con vocales o consonantes
-    if nivel.orden == 1:  # Suponiendo que el Nivel 1 es el alfabeto
-        vocales = list('AEIOU')
-        consonantes = list('BCDFGHJKLMNPQRSTVWXYZ')
+    # Determinar el tipo de feedback basado en el nivel
+    tipo_feedback = 'alfabeto' if nivel.orden == 1 else 'numeros'
+    request.session['tipo_feedback'] = tipo_feedback  # Almacena el tipo de feedback en la sesión
+    
+    alfabeto = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    numeros = list(range(0, 11))  # Del 0 al 10
 
-        # Si es una solicitud POST AJAX para establecer el tipo de letras
-        if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            tipo_letras = request.POST.get('tipo_letras', 'vocales')
-            request.session['tipo_letras'] = tipo_letras
-            return JsonResponse({'status': 'success', 'mensaje': f'Tipo de letras configurado a {tipo_letras}.'})
-
-        # Recuperar el tipo de letras (vocales o consonantes) de la sesión
-        tipo_letras = request.session.get('tipo_letras', 'vocales')
-        lista_letras = vocales if tipo_letras == 'vocales' else consonantes
-        letra_actual = request.session.get('letra_actual_feedback', lista_letras[0])
-
-        # Obtener la imagen correspondiente
+    # Establecer el elemento actual (letra o número) en función del tipo de feedback
+    if tipo_feedback == 'alfabeto':
+        letra_actual = request.session.get('letra_actual_feedback', alfabeto[0])
         try:
             senal_inicial = Senal.objects.get(name=letra_actual)
             senal_detectada = senal_inicial.imagen.url
-            logger.info(f"Imagen encontrada para la letra {letra_actual}: {senal_detectada}")
         except Senal.DoesNotExist:
-            senal_detectada = "media/senales/default_image.png"
-            logger.error(f"No se encontró imagen para la letra {letra_actual}")
+            senal_detectada = None
+    else:  # tipo_feedback == 'numeros'
+        numero_actual = request.session.get('numero_actual_feedback', numeros[0])
+        try:
+            senal_inicial = Senal.objects.get(name=str(numero_actual))
+            senal_detectada = senal_inicial.imagen.url
+        except Senal.DoesNotExist:
+            senal_detectada = None
 
-        if request.method == 'GET':
-            return render(request, 'core/lecciones/feedback.html', {
+    if request.method == 'GET':
+        # Comprobar si la solicitud es AJAX para responder con JSON
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            # Restablecer al primer elemento del tipo de feedback seleccionado
+            if tipo_feedback == 'alfabeto':
+                request.session['letra_actual_feedback'] = alfabeto[0]
+                return JsonResponse({
+                    'status': 'success',
+                    'letra_actual': letra_actual,
+                    'senal_detectada': senal_detectada,
+                    'tipo_feedback': 'alfabeto'
+                })
+            else:
+                request.session['numero_actual_feedback'] = numeros[0]
+                return JsonResponse({
+                    'status': 'success',
+                    'numero_actual': numero_actual,
+                    'senal_detectada': senal_detectada,
+                    'tipo_feedback': 'numeros'
+                })
+        else:
+            # Seleccionar el HTML adecuado según el tipo de feedback
+            template_name = 'core/lecciones/feedback.html' if tipo_feedback == 'alfabeto' else 'core/lecciones/feedback_num.html'
+
+            # Reiniciar a la primera letra o número
+            request.session['letra_actual_feedback'] = alfabeto[0]
+            request.session['numero_actual_feedback'] = numeros[0]
+            return render(request, template_name, {
                 'senal_detectada': senal_detectada,
-                'letra_actual': letra_actual,
-                'progreso': progreso,
-                'tipo_letras': tipo_letras,
-                'nivel': nivel
+                'letra_actual': letra_actual if tipo_feedback == 'alfabeto' else None,
+                'numero_actual': numero_actual if tipo_feedback == 'numeros' else None,
+                'nivel': nivel,
+                'tipo_feedback': tipo_feedback
             })
 
-        # Detectar la seña con AJAX para confirmar la letra (POST con tipo AJAX)
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
-            senal_realizada = request.POST.get('vocal_realizada')
-            logger.info(f"Seña realizada: {senal_realizada}, letra actual: {letra_actual}")
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
+        senal_realizada = request.POST.get('senal_realizada')
 
+        # Lógica de feedback para el alfabeto
+        if tipo_feedback == 'alfabeto':
             if senal_realizada == letra_actual:
-                indice_actual = lista_letras.index(letra_actual)
-
-                # Completar el feedback si es la última letra
-                if indice_actual == len(lista_letras) - 1:
-                    progreso.completado = True
-                    progreso.fecha_completado = now()
-                    progreso.save()
-
+                indice_letra = alfabeto.index(letra_actual)
+                if indice_letra == len(alfabeto) - 1:
+                    # Completar el feedback del alfabeto
+                    request.session['letra_actual_feedback'] = alfabeto[0]
                     return JsonResponse({
                         'status': 'success',
-                        'mensaje': f'¡Felicidades! Has completado el feedback de {tipo_letras}.',
+                        'mensaje': '¡Has completado el feedback del alfabeto!',
                         'completado': True,
                         'redirigir': '/levels/'
                     })
+                else:
+                    # Ir a la siguiente letra
+                    letra_actual = alfabeto[indice_letra + 1]
+                    request.session['letra_actual_feedback'] = letra_actual
 
-                # Avanzar a la siguiente letra
-                if indice_actual < len(lista_letras) - 1:
-                    letra_actual = lista_letras[indice_actual + 1]
-                request.session['letra_actual_feedback'] = letra_actual
+                    try:
+                        senal_inicial = Senal.objects.get(name=letra_actual)
+                        nueva_imagen = senal_inicial.imagen.url
+                    except Senal.DoesNotExist:
+                        nueva_imagen = None
 
-                try:
-                    senal_inicial = Senal.objects.get(name=letra_actual)
-                    nueva_imagen = senal_inicial.imagen.url
-                    logger.info(f"Nueva imagen encontrada para la letra {letra_actual}: {nueva_imagen}")
-                except Senal.DoesNotExist:
-                    nueva_imagen = None
-                    logger.error(f"No se encontró imagen para la letra {letra_actual}")
+                    return JsonResponse({
+                        'status': 'success',
+                        'nueva_letra': letra_actual,
+                        'nueva_imagen': nueva_imagen,
+                        'mensaje': '¡Seña correcta! Continúa con la siguiente letra.',
+                        'tipo_feedback': 'alfabeto'
+                    })
 
-                return JsonResponse({
-                    'status': 'success',
-                    'nueva_letra': letra_actual,
-                    'nueva_imagen': nueva_imagen,
-                    'mensaje': '¡Seña correcta! Presiona el botón para continuar.',
-                    'completado': False
-                })
+        # Lógica de feedback para los números
+        elif tipo_feedback == 'numeros':
+            # Verificar si la señal realizada es un número y coincide con el número actual
+            if senal_realizada.isdigit() and int(senal_realizada) == numero_actual:
+                indice_numero = numeros.index(numero_actual)
+                if indice_numero == len(numeros) - 1:
+                    # Completar el feedback de los números
+                    request.session['numero_actual_feedback'] = numeros[0]
+                    return JsonResponse({
+                        'status': 'success',
+                        'mensaje': '¡Has completado el feedback de los números!',
+                        'completado': True,
+                        'redirigir': '/levels/'
+                    })
+                else:
+                    # Ir al siguiente número
+                    numero_actual = numeros[indice_numero + 1]
+                    request.session['numero_actual_feedback'] = numero_actual
 
-            return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
+                    try:
+                        senal_inicial = Senal.objects.get(name=str(numero_actual))
+                        nueva_imagen = senal_inicial.imagen.url
+                    except Senal.DoesNotExist:
+                        nueva_imagen = None
 
-    # Para otros niveles (números, colores, etc.)
-    else:
-        feedback = Feedback.objects.filter(usuario=usuario, nivel=nivel).first()
-        return render(request, 'core/lecciones/feedback.html', {
-            'feedback': feedback,
-            'nivel': nivel
-        })
+                    return JsonResponse({
+                        'status': 'success',
+                        'nuevo_numero': numero_actual,
+                        'nueva_imagen': nueva_imagen,
+                        'mensaje': '¡Número correcto! Continúa con el siguiente número.',
+                        'tipo_feedback': 'numeros'
+                    })
+
+        return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
+
 
 #***********************Vista específica para manejar la lección de alfabeto***********************
 
@@ -290,14 +331,14 @@ def alfabeto(request):
         senal_detectada = "media/senales/Captura_de_pantalla_2024-10-23_153532.png"
         logger.error(f"No se encontró imagen para la letra {letra_actual}")
 
-    if request.method == 'GET':
-        return render(request, 'alfabeto.html', {
-            'senal_detectada': senal_detectada,
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
             'letra_actual': letra_actual,
+            'senal_detectada': senal_detectada,
             'fase_actual': fase_actual,
-            'progreso': progreso
         })
-
+    
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         senal_realizada = request.POST.get('senal_realizada')
         logger.info(f"Seña realizada: {senal_realizada}, letra actual: {letra_actual}, fase actual: {fase_actual}")
@@ -403,114 +444,144 @@ def alfabeto(request):
  
 #*************************Vista específica para manejar la lección de números*************************
 def numeros(request):
-    lista_numeros = list(range(10))
-    numero_actual = request.session.get('numero_actual', 8)
+    # Listas de números pares e impares
+    pares = [0, 2, 4, 6, 8, 10]
+    impares = [1, 3, 5, 7, 9]
     
+    # Determinar si está en la fase de pares o impares
+    fase_actual = request.session.get('fase_actual', 'pares')
+    numero_actual = request.session.get('numero_actual', pares[0] if fase_actual == 'pares' else impares[0])
+
+    # Obtener el nivel y progreso del usuario
     numeros = Nivel.objects.get(orden=2)
-    progreso = Progreso.objects.filter(usuario=request.user, nivel=numeros).first()
-    
+    progreso, _ = Progreso.objects.get_or_create(usuario=request.user, nivel=numeros)
+
+    # Verificar si el nivel está completo
     if progreso.completado:
         return JsonResponse({
             'status': 'completado',
-            'mensaje': 'Ya completaste el Nivel 2! Puede dirigirse a su feedback',
+            'mensaje': 'Ya completaste el Nivel 2! Puedes dirigirte a tu feedback.',
             'redirigir': '/levels/'
         })
 
+    # Intentar obtener la señal del número actual
     try:
         senal_inicial = Senal.objects.get(name=str(numero_actual))
         senal_detectada = senal_inicial.imagen.url
         logger.info(f"Imagen encontrada para el número {numero_actual}")
     except Senal.DoesNotExist:
         senal_detectada = None
-        logger.error(f"No se encontró la imagen para el número: {numero_actual}")
+        logger.error(f"No se encontró imagen para el número {numero_actual}")
 
-    if request.method == 'GET':
-        return render(request, 'numeros.html', {'senal_detectada': senal_detectada, 'numero_actual': numero_actual})
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'numero_actual': numero_actual,
+            'senal_detectada': senal_detectada,
+            'fase_actual': fase_actual,
+        })
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         senal_realizada = request.POST.get('senal_realizada')
-        logger.info(f"Seña realizada: {senal_realizada} (tipo: {type(senal_realizada)}), número actual: {numero_actual} (str: {str(numero_actual)}, tipo: {type(numero_actual)})")
+        logger.info(f"Seña realizada: {senal_realizada}, número actual: {numero_actual}, fase actual: {fase_actual}")
 
-        if str(senal_realizada).strip() == str(numero_actual).strip():
-            
-            if numero_actual == 9:
-                progreso, creado = Progreso.objects.get_or_create(usuario=request.user, nivel=numeros)
-                progreso.completado = True
-                progreso.fecha_completado = now()
-                progreso.save()
+        # Verificar si la seña realizada es correcta
+        if str(senal_realizada).strip() == str(numero_actual):
+            if fase_actual == 'pares':
+                # Si es el último par (10), pasar a los impares y mostrar mensaje de transición
+                if numero_actual == pares[-1]:  # Aquí el último número es 10
+                    fase_actual = 'impares'
+                    numero_actual = impares[0]
+                    request.session['fase_actual'] = fase_actual
+                    request.session['numero_actual'] = numero_actual
 
-                #Desbloquear el siguiente nivel
-                try:
-                    siguiente_nivel = Nivel.objects.get(orden=numeros.orden + 1)
-                    segunda_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
-                    if not segunda_leccion_siguiente_nivel:
+                    try:
+                        senal_inicial = Senal.objects.get(name=str(numero_actual))
+                        nueva_imagen = senal_inicial.imagen.url
+                    except Senal.DoesNotExist:
+                        nueva_imagen = None
+
+                    return JsonResponse({
+                        'status': 'transition',
+                        'mensaje': '¡Has completado los números pares! Ahora pasarás a los impares.',
+                        'nueva_fase': fase_actual,
+                        'nuevo_numero': numero_actual,
+                        'nueva_imagen': nueva_imagen
+                    })
+                else:
+                    # Ir al siguiente número par
+                    numero_actual = pares[pares.index(numero_actual) + 1]
+            elif fase_actual == 'impares':
+                # Si es el último impar (9), marcar el nivel como completado y desbloquear el siguiente
+                if numero_actual == impares[-1]:
+                    progreso.completado = True
+                    progreso.fecha_completado = now()
+                    progreso.save()
+
+                    # Intentar desbloquear el siguiente nivel
+                    try:
+                        siguiente_nivel = Nivel.objects.get(orden=numeros.orden + 1)
+                        primera_leccion_siguiente_nivel = Leccion.objects.filter(nivel=siguiente_nivel).first()
+                        if not primera_leccion_siguiente_nivel:
+                            return JsonResponse({
+                                'status': 'error',
+                                'mensaje': 'El siguiente nivel no tiene una lección asociada.'
+                            })
+
+                        Progreso.objects.get_or_create(
+                            usuario=request.user,
+                            nivel=siguiente_nivel,
+                            defaults={'desbloqueado': True, 'leccion': primera_leccion_siguiente_nivel}
+                        )
+                    except Nivel.DoesNotExist:
                         return JsonResponse({
                             'status': 'error',
-                            'mensaje': 'El siguiente nivel no tiene una lección asociada.'
+                            'mensaje': 'No se pudo encontrar el siguiente nivel.'
                         })
 
-                    Progreso.objects.get_or_create(
-                        usuario=request.user,
-                        nivel=siguiente_nivel,
-                        defaults={'desbloqueado': True, 'leccion': segunda_leccion_siguiente_nivel}
-                    )
-                except Nivel.DoesNotExist:
-                    return JsonResponse({
-                        'status': 'error',
-                        'mensaje': 'No se pudo encontrar el siguiente nivel.'
-                    })
+                    # Actualizar el dashboard del usuario
+                    try:
+                        dashboard, _ = Dashboard.objects.get_or_create(usuario=request.user)
+                        dashboard.nivel_actual = siguiente_nivel
+                        dashboard.actualizar_dashboard()
+                    except Exception as e:
+                        return JsonResponse({
+                            'status': 'error',
+                            'mensaje': f'Error al actualizar el dashboard: {str(e)}'
+                        })
 
-                #Actualizar el dashboard del usuario
-                try:
-                    dashboard, created = Dashboard.objects.get_or_create(usuario=request.user)
-                    dashboard.nivel_actual = siguiente_nivel
-                    dashboard.actualizar_dashboard()
-                except Exception as e:
                     return JsonResponse({
-                        'status': 'error',
-                        'mensaje': f'Error al actualizar el dashboard: {str(e)}'
+                        'status': 'success',
+                        'mensaje': '¡Felicidades! Has completado el Nivel 2. ¡Prepárate para el siguiente nivel!',
+                        'completado': True,
+                        'redirigir': '/levels/'
                     })
-
-                return JsonResponse({
-                    'status': 'success',
-                    'mensaje': '¡Felicidades! Ha completado el Nivel 2. ¡Prepárese para el siguiente nivel!',
-                    'completado': True,
-                    'redirigir': '/levels/'
-                })
-                
-            try:
-                indice_actual = lista_numeros.index(int(numero_actual))
-                if indice_actual < len(lista_numeros) - 1:
-                    numero_actual = lista_numeros[indice_actual + 1]
-                    logger.info(f"Avanzando al siguiente número: {numero_actual}")
                 else:
-                    numero_actual = 0  # Reiniciar a 0 si se completa toda la lista de números
-                    logger.info("Reiniciando al número 0")
+                    # Ir al siguiente número impar
+                    numero_actual = impares[impares.index(numero_actual) + 1]
 
-                request.session['numero_actual'] = numero_actual
+            # Guardar la fase y número actual en la sesión
+            request.session['fase_actual'] = fase_actual
+            request.session['numero_actual'] = numero_actual
 
-                try:
-                    senal_inicial = Senal.objects.get(name=str(numero_actual))
-                    nueva_imagen = senal_inicial.imagen.url
-                    logger.info(f"Nueva imagen cargada para el número: {numero_actual}")
-                except Senal.DoesNotExist:
-                    nueva_imagen = None
-                    logger.error(f"No se encontró la imagen para el siguiente número: {numero_actual}")
+            # Intentar cargar la imagen del nuevo número
+            try:
+                senal_inicial = Senal.objects.get(name=str(numero_actual))
+                nueva_imagen = senal_inicial.imagen.url
+                logger.info(f"Nueva imagen encontrada para el número {numero_actual}: {nueva_imagen}")
+            except Senal.DoesNotExist:
+                nueva_imagen = None
+                logger.error(f"No se encontró imagen para el número {numero_actual}")
 
-                return JsonResponse({
-                    'status': 'success',
-                    'nuevo_numero': str(numero_actual),
-                    'nueva_imagen': nueva_imagen, 
-                    'mensaje': '¡Número correcto! Presiona el botón para continuar con el siguiente número.'
-                })
+            return JsonResponse({
+                'status': 'success',
+                'nuevo_numero': numero_actual,
+                'nueva_imagen': nueva_imagen,
+                'mensaje': '¡Número correcto! Presiona el botón para continuar con el siguiente número.',
+                'completado': False
+            })
 
-            except ValueError:
-                logger.error(f"El número actual {numero_actual} no se encontró en la lista de números.")
-                return JsonResponse({'status': 'error', 'mensaje': 'Hubo un problema con la secuencia de números.'})
-
-        logger.info(f"Número incorrecto. Seña realizada: {senal_realizada}, número actual esperado: {str(numero_actual)}")
         return JsonResponse({'status': 'error', 'mensaje': 'Número incorrecto, inténtalo de nuevo.'})
-
 
 #*************************Vista específica para manejar la lección de colores*************************
 def colores(request):

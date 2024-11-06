@@ -1,0 +1,193 @@
+{% extends 'components/base.html' %}
+{% block title %}Feedback - Nivel de Números{% endblock %}
+{% load static %}
+{% block content %}
+<body class="bodyevaluate hide-buttons">
+    <div class="card-eva">
+        <h1>Feedback - Nivel de Números</h1>
+        
+        <!-- Mensaje emergente inicial -->
+        <div id="popup-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50" style="margin-top: 90px;">
+            <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Bienvenido al Feedback del Nivel de Números!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Completa las señas para los números del 0 al 10 en orden. ¡Haz clic en comenzar para iniciar!</p>
+                <button id="start-button" class="text-white py-2 px-4 rounded-md" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Comenzar</button>
+            </div>
+        </div>
+        
+        <!-- Mensaje emergente para indicar éxito en la detección del número -->
+        <div id="success-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 hidden">
+            <div class="bg-white p-8 rounded-lg shadow-lg text-center w-80">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Seña correcta!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Has realizado la seña correctamente. Haz clic en "Siguiente" para continuar con el siguiente número.</p>
+                <button id="next-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md" style="font-family: 'Jomolhari', serif;">Siguiente</button>
+            </div>
+        </div>
+        
+        <!-- Contenedor para la transmisión de video en tiempo real -->
+        <div id="content-container" class="flex justify-center space-x-6 w-full max-w-5xl p-4 hidden" style="margin-top: -30px;">
+            <!-- Cuadro izquierdo -->
+            <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Número Actual: <span id="numero-actual">{{ numero_actual }}</span></h2>
+                <img id="imagen-numero" src="{{ senal_detectada }}" alt="Imagen del Número {{ numero_actual }}" class="w-full h-auto">
+            </div>            
+
+            <!-- Cuadro derecho con la cámara -->
+            <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Detector de Señales IA</h2>
+                <!-- Transmisión en vivo de la cámara -->
+                <img src="{% url 'core:video_feed' 'numeros' %}" class="rounded-lg w-full h-auto" alt="Video en tiempo real">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('popup-message');
+            const cameraPermissionPopup = document.createElement('div');
+            cameraPermissionPopup.classList.add('fixed', 'inset-0', 'flex', 'justify-center', 'items-center', 'bg-black', 'bg-opacity-50', 'z-50');
+            cameraPermissionPopup.innerHTML = `
+                <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9; margin-top: 90px;">
+                    <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Activar Cámara</h2>
+                    <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Para realizar el nivel, necesitamos acceso a tu cámara. ¿Deseas encender la cámara ahora?</p>
+                    <button id="allow-camera-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mr-4" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Permitir</button>
+                    <button id="deny-camera-button" class="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-md mt-2" style="background-color: #E37E18; font-family: 'Jomolhari', serif;">No permitir</button>
+                </div>
+            `;
+            document.body.appendChild(cameraPermissionPopup);
+
+            const contentContainer = document.getElementById('content-container');
+            const startButton = document.getElementById('start-button');
+            const successMessage = document.getElementById('success-message');
+            const nextButton = document.getElementById('next-button');
+            const numeroActual = document.getElementById('numero-actual');
+            const imagenNumero = document.getElementById('imagen-numero');
+            const allowCameraButton = document.getElementById('allow-camera-button');
+            const denyCameraButton = document.getElementById('deny-camera-button');
+    
+            cameraPermissionPopup.style.display = 'none'; 
+
+            // Mostrar el contenido principal al hacer clic en "Comenzar"
+            startButton.onclick = function() {
+                popup.style.display = 'none';
+                cameraPermissionPopup.style.display = 'flex';
+            };
+
+            allowCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none';
+                contentContainer.style.display = 'flex';
+                iniciarLeccion();
+            };
+        
+            denyCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none';
+                Swal.fire({
+                    title: 'Cámara requerida',
+                    text: 'Necesitas activar la cámara para poder realizar este nivel.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    window.location.href = '/levels/';
+                });
+            };
+
+            // Función para cargar el número y la imagen actuales
+            function cargarNumeroYImagen() {
+                $.ajax({
+                    url: "{% url 'core:feedback_nivel' nivel.id %}",
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            numeroActual.innerText = response.numero_actual;
+                            imagenNumero.src = response.senal_detectada;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al cargar el número y la imagen:', error);
+                    }
+                });
+            }
+
+            // Función para iniciar la lección desde el primer número
+            function iniciarLeccion() {
+                cargarNumeroYImagen();
+                iniciarDeteccion();
+            }
+
+            // Función para mostrar el mensaje de éxito cuando la seña es correcta
+            function mostrarMensajeExito() {
+                successMessage.style.display = 'flex';
+            }
+
+            // Función para enviar la seña detectada al servidor para validación
+            function onSenalDetectada(senal_detectada) {
+                $.ajax({
+                    url: "{% url 'core:feedback_nivel' nivel.id %}",
+                    type: 'POST',
+                    data: {
+                        'senal_realizada': senal_detectada,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            if (response.completado) {
+                                Swal.fire({
+                                    title: '¡Felicidades!',
+                                    text: response.mensaje,
+                                    icon: 'success',
+                                    confirmButtonText: 'Ir al menú de niveles'
+                                }).then(() => {
+                                    window.location.href = response.redirigir;
+                                });
+                            } else {
+                                mostrarMensajeExito();
+                                nextButton.onclick = function() {
+                                    numeroActual.innerText = response.nuevo_numero;
+                                    imagenNumero.src = response.nueva_imagen;
+                                    successMessage.style.display = 'none';
+                                };
+                            }
+                        } else {
+                            console.log('Seña incorrecta');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al enviar la seña detectada:', error);
+                    }
+                });
+            }
+
+            // Función para hacer una petición al backend y detectar la seña en tiempo real
+            function detectarSenalDesdeBackend() {
+                $.ajax({
+                    url: "{% url 'core:detectar_senal' %}",
+                    type: 'POST',
+                    data: {
+                        'tipo_leccion': 'numeros',
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            var senal_detectada = response.senal_detectada;
+                            if (senal_detectada) {
+                                onSenalDetectada(senal_detectada);
+                            }
+                        } else {
+                            console.log('No se detectó ninguna seña.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al detectar la seña:', error);
+                    }
+                });
+            }
+
+            // Función para iniciar la detección de señas en la lección
+            function iniciarDeteccion() {
+                setInterval(detectarSenalDesdeBackend, 2000);
+            }
+        });
+    </script>    
+</body>
+{% endblock %}
