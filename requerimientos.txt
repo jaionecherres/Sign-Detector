@@ -53,3 +53,4 @@ wcwidth==0.2.13
 numpy
 opencv-python
 scikit-learn==1.5.1
+mediapipe==0.10.14

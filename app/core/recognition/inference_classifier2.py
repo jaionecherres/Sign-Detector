@@ -9,7 +9,7 @@ from collections import deque
 model_alfabeto_path = os.path.join(settings.BASE_DIR, 'app', 'core', 'recognition', 'random_forest_landmarks_model.pkl')
 model_numeros_path = os.path.join(settings.BASE_DIR, 'app', 'core', 'recognition', 'model_numeros.pkl')
 model_colores_path = os.path.join(settings.BASE_DIR, 'app', 'core', 'recognition', 'colores_model.pkl')
-model_senas_path = os.path.join(settings.BASE_DIR, 'app', 'core', 'recognition', 'eva_inv.pkl')
+model_senas_path = os.path.join(settings.BASE_DIR, 'app', 'core', 'recognition', 'eva_invitado.pkl')
 
 model_senas = None
 model_alfabeto = None

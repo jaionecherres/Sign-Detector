@@ -1,0 +1,219 @@
+{% extends 'components/base.html' %}
+{% block title %}Evaluación Final{% endblock %}
+{% load static %}
+{% block content %}
+<body class="bodyevaluate hide-buttons">
+    <div class="card-eva">
+        <h1>Evaluación Final</h1>
+
+        <!-- Mensaje emergente inicial -->
+        <div id="popup-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50" style="margin-top: 90px;">
+            <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Bienvenido a la Evaluación Final!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Completa las señas requeridas en el orden indicado. ¡Haz clic en comenzar para iniciar!</p>
+                <button id="start-button" class="text-white py-2 px-4 rounded-md" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Comenzar</button>
+            </div>
+        </div>
+
+        <!-- Mensaje emergente para indicar éxito en la detección de la seña -->
+        <div id="success-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 hidden">
+            <div class="bg-white p-8 rounded-lg shadow-lg text-center w-80">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Seña correcta!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Has realizado la seña correctamente. Haz clic en "Siguiente" para continuar con la siguiente seña.</p>
+                <button id="next-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md" style="font-family: 'Jomolhari', serif;">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- Contenedor para la transmisión de video en tiempo real -->
+        <div id="content-container" class="flex justify-center space-x-6 w-full max-w-5xl p-4 hidden" style="margin-top: -30px;">
+            <!-- Cuadro izquierdo -->
+            <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Seña Actual: <span id="senal-actual">{{ senal_actual }}</span></h2>
+                <img id="imagen-senal" src="{{ senal_detectada }}" alt="Imagen de la Seña {{ senal_actual }}" class="w-full h-auto">
+            </div>            
+
+            <!-- Cuadro derecho con la cámara -->
+            <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Detector de Señales IA</h2>
+                <!-- Transmisión en vivo de la cámara -->
+                <img id="video-feed" src="" class="rounded-lg w-full h-auto" alt="Video en tiempo real">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('popup-message');
+            const cameraPermissionPopup = document.createElement('div');
+            cameraPermissionPopup.classList.add('fixed', 'inset-0', 'flex', 'justify-center', 'items-center', 'bg-black', 'bg-opacity-50', 'z-50');
+            cameraPermissionPopup.innerHTML = `
+                <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9; margin-top: 90px;">
+                    <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Activar Cámara</h2>
+                    <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Para realizar la evaluación, necesitamos acceso a tu cámara. ¿Deseas encender la cámara ahora?</p>
+                    <button id="allow-camera-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mr-4" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Permitir</button>
+                    <button id="deny-camera-button" class="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-md mt-2" style="background-color: #E37E18; font-family: 'Jomolhari', serif;">No permitir</button>
+                </div>
+            `;
+            document.body.appendChild(cameraPermissionPopup);
+
+            const contentContainer = document.getElementById('content-container');
+            const startButton = document.getElementById('start-button');
+            const successMessage = document.getElementById('success-message');
+            const nextButton = document.getElementById('next-button');
+            const senalActual = document.getElementById('senal-actual');
+            const imagenSenal = document.getElementById('imagen-senal');
+            const videoFeed = document.getElementById('video-feed');
+            const allowCameraButton = document.getElementById('allow-camera-button');
+            const denyCameraButton = document.getElementById('deny-camera-button');
+    
+            cameraPermissionPopup.style.display = 'none'; 
+
+            // URL de los diferentes tipos de video feed
+            const videoFeedUrls = {
+                'alfabeto': "{% url 'core:video_feed' 'alfabeto' %}",
+                'numeros': "{% url 'core:video_feed' 'numeros' %}",
+                'colores': "{% url 'core:video_feed' 'colores' %}"
+            };
+
+            // Controla las señales en secuencia (3 letras, 3 números, 3 colores)
+            let currentSignalIndex = 0;
+            const signalSequence = [
+                { type: 'alfabeto', name: 'A' }, { type: 'alfabeto', name: 'B' }, { type: 'alfabeto', name: 'C' },
+                { type: 'numeros', name: '1' }, { type: 'numeros', name: '2' }, { type: 'numeros', name: '3' },
+                { type: 'colores', name: 'Rojo' }, { type: 'colores', name: 'Verde' }, { type: 'colores', name: 'Cafe' }
+            ];
+
+            // Mostrar el contenido principal al hacer clic en "Comenzar"
+            startButton.onclick = function() {
+                popup.style.display = 'none';
+                cameraPermissionPopup.style.display = 'flex';
+            };
+
+            allowCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none';
+                contentContainer.style.display = 'flex';
+                iniciarLeccion(signalSequence[currentSignalIndex].type);
+            };
+        
+            denyCameraButton.onclick = function() {
+                cameraPermissionPopup.style.display = 'none';
+                Swal.fire({
+                    title: 'Cámara requerida',
+                    text: 'Necesitas activar la cámara para poder realizar este nivel.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    window.location.href = '/levels/';
+                });
+            };
+
+            function mostrarTransicion(tipoSiguiente) {
+                // Detener el feed actual
+                videoFeed.src = '';
+                
+                // Mostrar mensaje de transición
+                Swal.fire({
+                    title: '¡Sección Completada!',
+                    text: `A continuación, continuaremos con la sección de ${tipoSiguiente}.`,
+                    icon: 'info',
+                    confirmButtonText: 'Continuar'
+                }).then(() => {
+                    iniciarLeccion(tipoSiguiente);  // Comenzar el siguiente tipo de lección
+                });
+            }
+
+            function iniciarLeccion(tipoLeccion) {
+                videoFeed.src = videoFeedUrls[tipoLeccion];
+                actualizarVideoFeed();
+                iniciarDeteccion();
+            }
+
+            function actualizarVideoFeed() {
+                const currentSignal = signalSequence[currentSignalIndex];
+                videoFeed.src = videoFeedUrls[currentSignal.type];
+                senalActual.innerText = currentSignal.name;
+                imagenSenal.src = `/path/to/signals/${currentSignal.name}.png`;
+            }
+
+            function onSenalDetectada(senal_detectada) {
+                const currentSignal = signalSequence[currentSignalIndex];
+                
+                if (senal_detectada === currentSignal.name) {
+                    $.ajax({
+                        url: "{% url 'core:detectar_senal' %}",
+                        type: 'POST',
+                        data: {
+                            'tipo_leccion': currentSignal.type,
+                            'senal_realizada': senal_detectada,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                if (currentSignalIndex === signalSequence.length - 1) {
+                                    // Mostrar mensaje final y redirigir al menú de niveles
+                                    Swal.fire({
+                                        title: '¡Felicidades!',
+                                        text: '¡Has completado tu evaluación!',
+                                        icon: 'success',
+                                        confirmButtonText: 'Ir al menú de niveles'
+                                    }).then(() => {
+                                        window.location.href = '/levels/';
+                                    });
+                                } else {
+                                    successMessage.style.display = 'flex';
+                                    nextButton.onclick = function() {
+                                        currentSignalIndex++;
+                                        if (currentSignalIndex < signalSequence.length) {
+                                            const tipoActual = signalSequence[currentSignalIndex - 1].type;
+                                            const tipoSiguiente = signalSequence[currentSignalIndex].type;
+                                            if (tipoActual !== tipoSiguiente) {
+                                                mostrarTransicion(tipoSiguiente);
+                                            } else {
+                                                actualizarVideoFeed();
+                                            }
+                                        }
+                                        successMessage.style.display = 'none';
+                                    };
+                                }
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.log('Error al enviar la seña detectada:', error);
+                        }
+                    });
+                }
+            }
+
+
+
+            function detectarSenalDesdeBackend() {
+                $.ajax({
+                    url: "{% url 'core:detectar_senal' %}",
+                    type: 'POST',
+                    data: {
+                        'tipo_leccion': signalSequence[currentSignalIndex].type,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            var senal_detectada = response.senal_detectada;
+                            if (senal_detectada) {
+                                onSenalDetectada(senal_detectada);
+                            }
+                        } else {
+                            console.log('No se detectó ninguna seña.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al detectar la seña:', error);
+                    }
+                });
+            }
+
+            function iniciarDeteccion() {
+                setInterval(detectarSenalDesdeBackend, 2000);
+            }
+        });
+    </script>    
+</body>
+{% endblock %}

@@ -12,4 +12,5 @@ urlpatterns = [
     path('numeros/', views.numeros, name='numeros'),
     path('colores/', views.colores, name='colores'),
     path('feedback/<int:nivel_id>/', views.feedback_nivel, name='feedback_nivel'),
+    path('evaluacion_final/', views.evaluacion_final, name='evaluacion_final')
 ]

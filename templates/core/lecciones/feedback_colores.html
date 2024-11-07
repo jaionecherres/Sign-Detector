@@ -1,47 +1,55 @@
 {% extends 'components/base.html' %}
-{% block title %}Feedback - Nivel de Alfabeto{% endblock %}
+{% block title %}Feedback - Nivel de Colores{% endblock %}
 {% load static %}
 {% block content %}
-<body class="bodyevaluate hide-buttons">
-    <div class="card-eva">
-        <h1>Feedback - Nivel de Alfabeto</h1>
-        
+<body class="bg-gray-100">
+    <div class="flex justify-center items-center flex-col min-h-screen">
+        <h1 class="text-3xl font-bold mb-6" style="font-family: 'Jomolhari', serif; margin-top: 50px;">Feedback - Nivel de Colores</h1>
+
         <!-- Mensaje emergente inicial -->
         <div id="popup-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50" style="margin-top: 90px;">
             <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9;">
-                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Bienvenido al Feedback del Nivel de Alfabeto!</h2>
-                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Completa las señas en orden alfabético. ¡Haz clic en comenzar para iniciar!</p>
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Bienvenido al Feedback de Colores!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Completa las señas para los colores cálidos y fríos. ¡Haz clic en comenzar para iniciar!</p>
                 <button id="start-button" class="text-white py-2 px-4 rounded-md" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Comenzar</button>
             </div>
         </div>
-        
-        <!-- Mensaje emergente para indicar éxito en la detección de la letra -->
+
+        <!-- Mensaje de transición entre categorías de colores -->
+        <div id="transition-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 hidden">
+            <div class="bg-white p-8 rounded-lg shadow-lg text-center w-80">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Colores cálidos completados!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">A continuación, iniciaremos con los colores fríos.</p>
+                <button id="continue-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md" style="font-family: 'Jomolhari', serif;">Continuar</button>
+            </div>
+        </div>
+
+        <!-- Mensaje emergente para indicar éxito en la detección del color -->
         <div id="success-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg text-center w-80">
-                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Seña correcta!</h2>
-                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Has realizado la seña correctamente. Haz clic en "Siguiente" para continuar con la siguiente letra.</p>
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Color correcto!</h2>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Has realizado la seña correctamente. Haz clic en "Siguiente" para continuar con el siguiente color.</p>
                 <button id="next-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md" style="font-family: 'Jomolhari', serif;">Siguiente</button>
             </div>
         </div>
-        
-        <!-- Contenedor para la transmisión de video en tiempo real -->
+
+        <!-- Contenido principal oculto inicialmente -->
         <div id="content-container" class="flex justify-center space-x-6 w-full max-w-5xl p-4 hidden" style="margin-top: -30px;">
             <!-- Cuadro izquierdo -->
             <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
-                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Letra Actual: <span id="letra-actual">{{ letra_actual }}</span></h2>
-                <img id="imagen-letra" src="{{ senal_detectada }}" alt="Imagen de la Letra {{ letra_actual }}" class="w-90 h-75 object-contain mx-auto">
+                <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Color Actual: <span id="color-actual">{{ color_actual }}</span></h2>
+                <img id="imagen-color" src="{{ senal_detectada }}" alt="Imagen del Color {{ color_actual }}" class="w-70 h-70 object-contain mx-auto">
             </div>            
 
             <!-- Cuadro derecho con la cámara -->
             <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
                 <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Detector de Señales IA</h2>
                 <!-- Transmisión en vivo de la cámara -->
-                <img src="{% url 'core:video_feed' 'alfabeto' %}" class="rounded-lg w-full h-auto" alt="Video en tiempo real">
+                <img src="{% url 'core:video_feed' 'colores' %}" class="rounded-lg w-full h-auto" alt="Video en tiempo real">
             </div>
         </div>
     </div>
 
-    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const popup = document.getElementById('popup-message');
@@ -57,18 +65,19 @@
             `;
             document.body.appendChild(cameraPermissionPopup);
 
+            const transitionMessage = document.getElementById('transition-message');
             const contentContainer = document.getElementById('content-container');
             const startButton = document.getElementById('start-button');
+            const continueButton = document.getElementById('continue-button');
             const successMessage = document.getElementById('success-message');
             const nextButton = document.getElementById('next-button');
-            const letraActual = document.getElementById('letra-actual');
-            const imagenLetra = document.getElementById('imagen-letra');
+            const colorActual = document.getElementById('color-actual');
+            const imagenColor = document.getElementById('imagen-color');
             const allowCameraButton = document.getElementById('allow-camera-button');
             const denyCameraButton = document.getElementById('deny-camera-button');
-    
-            cameraPermissionPopup.style.display = 'none'; 
 
-            // Mostrar el contenido principal al hacer clic en "Comenzar"
+            cameraPermissionPopup.style.display = 'none'; 
+        
             startButton.onclick = function() {
                 popup.style.display = 'none';
                 cameraPermissionPopup.style.display = 'flex';
@@ -91,37 +100,37 @@
                     window.location.href = '/levels/';
                 });
             };
-
-            // Función para cargar la letra y la imagen actuales
-            function cargarLetraYImagen() {
+        
+            function cargarColorYImagen() {
                 $.ajax({
                     url: "{% url 'core:feedback_nivel' nivel.id %}",
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            letraActual.innerText = response.letra_actual;
-                            imagenLetra.src = response.senal_detectada;
+                            colorActual.innerText = response.color_actual;
+                            imagenColor.src = response.senal_detectada;
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.log('Error al cargar la letra y la imagen:', error);
+                        console.log('Error al cargar el color y la imagen:', error);
                     }
                 });
             }
-
-            // Función para iniciar la lección desde la primera letra
+        
             function iniciarLeccion() {
-                cargarLetraYImagen();
+                cargarColorYImagen();
                 iniciarDeteccion();
             }
-
-            // Función para mostrar el mensaje de éxito cuando la seña es correcta
+        
             function mostrarMensajeExito() {
                 successMessage.style.display = 'flex';
             }
-
-            // Función para enviar la seña detectada al servidor para validación
+        
+            function mostrarMensajeTransicion() {
+                transitionMessage.style.display = 'flex';
+            }
+        
             function onSenalDetectada(senal_detectada) {
                 $.ajax({
                     url: "{% url 'core:feedback_nivel' nivel.id %}",
@@ -142,13 +151,22 @@
                                     window.location.href = response.redirigir;
                                 });
                             } else {
+                                // Mostrar el mensaje de éxito y actualizar el color y la imagen
                                 mostrarMensajeExito();
                                 nextButton.onclick = function() {
-                                    letraActual.innerText = response.nueva_letra;
-                                    imagenLetra.src = response.nueva_imagen;
+                                    colorActual.innerText = response.nuevo_color;
+                                    imagenColor.src = response.nueva_imagen;
                                     successMessage.style.display = 'none';
                                 };
                             }
+                        } else if (response.status === 'transition') {
+                            // Mostrar mensaje de transición y cargar el primer color frío
+                            mostrarMensajeTransicion();
+                            continueButton.onclick = function() {
+                                transitionMessage.style.display = 'none';
+                                colorActual.innerText = response.nuevo_color;
+                                imagenColor.src = response.nueva_imagen;
+                            };
                         } else {
                             console.log('Seña incorrecta');
                         }
@@ -157,19 +175,17 @@
                         console.log('Error al enviar la seña detectada:', error);
                     }
                 });
-            }
-
-            // Función para hacer una petición al backend y detectar la seña en tiempo real
+            }                       
+        
             function detectarSenalDesdeBackend() {
                 $.ajax({
                     url: "{% url 'core:detectar_senal' %}",
                     type: 'POST',
                     data: {
-                        'tipo_leccion': 'alfabeto',
+                        'tipo_leccion': 'colores',
                         'csrfmiddlewaretoken': '{{ csrf_token }}'
                     },
                     success: function(response) {
-                        console.log("Respuesta del servidor:", response); // Depuración
                         if (response.status === 'success') {
                             var senal_detectada = response.senal_detectada;
                             if (senal_detectada) {
@@ -184,12 +200,11 @@
                     }
                 });
             }
-
-            // Función para iniciar la detección de señas en la lección
+        
             function iniciarDeteccion() {
                 setInterval(detectarSenalDesdeBackend, 2000);
             }
-        });
+        });        
     </script>    
 </body>
 {% endblock %}

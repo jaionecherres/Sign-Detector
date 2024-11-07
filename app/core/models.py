@@ -79,7 +79,7 @@ class Senal(models.Model):
     name = models.CharField(verbose_name='Nombre', max_length=150)
     descripcion = models.TextField(verbose_name='Descripción', null=True, blank=True)
     leccion = models.ForeignKey(Leccion, on_delete=models.CASCADE)
-    imagen = models.ImageField(verbose_name='Imagen de Ejemplo', upload_to='senales/')
+    imagen = models.ImageField(verbose_name='Imagen de Ejemplo', upload_to='senales/', null=True, blank=True)
     video = models.FileField(verbose_name='Video de Ejemplo', upload_to='videos/', null=True, blank=True)
 
     def __str__(self):
@@ -89,6 +89,11 @@ class Senal(models.Model):
         verbose_name = 'Señal'
         verbose_name_plural = 'Señales'
         ordering = ['name']
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.imagen and not self.video:
+            raise ValidationError("Debe proporcionar al menos una imagen o un video.")
 
 
 class Feedback(models.Model):

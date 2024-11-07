@@ -29,7 +29,7 @@
             <!-- Cuadro izquierdo -->
             <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
                 <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Letra Actual: <span id="letra-actual">{{ letra_actual }}</span></h2>
-                <img id="imagen-letra" src="{{ senal_detectada }}" alt="Imagen de la Letra {{ letra_actual }}" class="w-full h-auto">
+                <img id="imagen-letra" src="{{ senal_detectada }}" alt="Imagen de la Letra {{ letra_actual }}" class="w-90 h-75 object-contain mx-auto">
             </div>
         
             <!-- Cuadro derecho con la cámara -->
@@ -102,31 +102,35 @@
     
             // Verificar si el nivel ya está completado al cargar la página
             $.ajax({
-                url: "{% url 'core:alfabeto' %}",  
-                type: 'POST',
-                data: {
-                    'csrfmiddlewaretoken': '{{ csrf_token }}'
-                },
+                url: "{% url 'core:alfabeto' %}",
+                type: 'GET',
+                dataType: 'json',
                 success: function(response) {
-                    if (response.status === 'completado') {
-                        Swal.fire({
-                            title: 'Nivel completado',
-                            text: response.mensaje,
-                            icon: 'info',
-                            confirmButtonText: 'Ir al inicio'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = response.redirigir;
-                            }
-                        });
-                    } else {
-                        popup.style.display = 'flex'; // Mostrar el mensaje emergente de bienvenida
+                    if (response.status === 'success') {
+                        const mediaContainer = document.getElementById('media-container');
+                        mediaContainer.innerHTML = '';
+            
+                        if (response.es_video) {
+                            const videoElement = document.createElement('video');
+                            videoElement.src = response.senal_detectada;
+                            videoElement.controls = true;
+                            videoElement.autoplay = true;
+                            videoElement.loop = true;
+                            videoElement.classList.add('w-90', 'h-90', 'object-contain', 'mx-auto');
+                            mediaContainer.appendChild(videoElement);
+                        } else {
+                            const imgElement = document.createElement('img');
+                            imgElement.src = response.senal_detectada;
+                            imgElement.alt = `Imagen de la Letra ${response.letra_actual}`;
+                            imgElement.classList.add('w-90', 'h-90', 'object-contain', 'mx-auto');
+                            mediaContainer.appendChild(imgElement);
+                        }
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('Error al verificar el progreso:', error);
+                    console.log('Error al cargar la letra y la imagen:', error);
                 }
-            });
+            });            
             
             startLevelButton.onclick = function() {
                 popup.style.display = 'none';

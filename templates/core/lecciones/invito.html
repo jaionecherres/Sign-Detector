@@ -1,0 +1,33 @@
+{% extends 'components/base.html' %}
+{% block title %}{{ title1 }}{% endblock %}
+{% load static %}
+{% block content %}
+
+<!-- Courses Section Start -->
+<div class="container-fluid py-5 d-flex flex-column align-items-center">
+    <!-- Título de la sección -->
+    <div class="text-center mb-5" style="margin-top: 20px;">
+        <h5 class="text-primary text-uppercase mb-3" style="letter-spacing: 5px;">Invitado</h5>
+        <h2 style="color: black;">Aprende con nosotros!</h2>
+    </div>
+    
+    <!-- Contenedor del nivel de prueba -->
+    <div class="col-lg-5 col-md-6 mb-4" style="margin-left: 100px;">
+        <div class="rounded overflow-hidden shadow-lg bg-white" style="width: 100%; max-width: 500px; height: 300px;">
+            <img class="img-fluid" src="{% static 'img/números-letras.jpeg' %}" alt="" style="height: 175px; width: 100%; object-fit: cover;">
+            <div class="p-4 bg-gray-100" style="height: 125px;">
+                <div class="d-flex justify-content-between mb-3">
+                    <small class="text-gray-600">
+                        <i class="fa fa-users text-primary mr-2"></i>Nivel de Prueba
+                    </small>
+                </div>
+                <a class="h5 font-semibold" href="#" onclick="closeDropdown()" style="text-decoration: none; color: #1C64F2; font-family: 'Inter', sans-serif; font-weight: bold;">
+                    Prueba
+                </a>                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Courses Section End -->
+
+{% endblock %}

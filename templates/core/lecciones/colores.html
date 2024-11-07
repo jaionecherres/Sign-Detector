@@ -6,21 +6,20 @@
     <div class="flex justify-center items-center flex-col min-h-screen">
         <h1 class="text-3xl font-bold mb-6" style="font-family: 'Jomolhari', serif; margin-top: 50px;">Nivel 3</h1>
 
-        <!-- Mensaje emergente inicial -->
+        <!-- Mensaje emergente inicial para iniciar el nivel -->
         <div id="popup-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50" style="margin-top: 90px;">
             <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9;">
                 <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Bienvenido al Nivel 3!</h2>
-                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">En este nivel aprenderá el abecedario en lengua de señas. ¡Haz clic en comenzar para iniciar!</p>
-                <button id="start-button" class="text-white py-2 px-4 rounded-md" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Comenzar</button>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">En este nivel aprenderás a reconocer los colores en lengua de señas.</p>
+                <button id="start-level-button" class="text-white py-2 px-4 rounded-md" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Comenzar</button>
             </div>
         </div>
-        
 
         <!-- Mensaje emergente para indicar éxito en la detección del color -->
         <div id="success-message" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg text-center w-80">
                 <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">¡Color correcto!</h2>
-                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Ha realizado la seña correctamente. Haz clic en "Siguiente" para continuar con la siguiente letra.</p>
+                <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Has realizado la seña correctamente. Haz clic en "Siguiente" para continuar con el siguiente color.</p>
                 <button id="next-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md" style="font-family: 'Jomolhari', serif;">Siguiente</button>
             </div>
         </div>
@@ -30,7 +29,7 @@
             <!-- Cuadro izquierdo -->
             <div class="bg-white rounded-lg shadow-lg p-6" style="width: 550px;">
                 <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Color Actual: <span id="color-actual">{{ color_actual }}</span></h2>
-                <img id="imagen-color" src="{{ senal_detectada }}" alt="Imagen del Color {{ color_actual }}" class="w-full h-auto">
+                <img id="imagen-color" src="{{ senal_detectada }}" alt="Imagen del Color {{ color_actual }}" class="w-64 h-64 object-contain mx-auto">
             </div>            
 
             <!-- Cuadro derecho con la cámara -->
@@ -45,59 +44,88 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const popup = document.getElementById('popup-message');
-            const cameraPermissionPopup = document.createElement('div');
-            cameraPermissionPopup.classList.add('fixed', 'inset-0', 'flex', 'justify-center', 'items-center', 'bg-black', 'bg-opacity-50', 'z-50');
-            cameraPermissionPopup.innerHTML = `
-                <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9; margin-top: 90px;">
-                    <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Activar Cámara</h2>
-                    <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Para realizar el nivel, necesitamos acceso a tu cámara. ¿Deseas encender la cámara ahora?</p>
-                    <button id="allow-camera-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mr-4" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Permitir</button>
-                    <button id="deny-camera-button" class="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-md mt-2" style="background-color: #E37E18; font-family: 'Jomolhari', serif;">No permitir</button>
-                </div>
-            `;
-
-            document.body.appendChild(cameraPermissionPopup);
-            
             const contentContainer = document.getElementById('content-container');
-            const startButton = document.getElementById('start-button');
             const successMessage = document.getElementById('success-message');
             const nextButton = document.getElementById('next-button');
             const colorActual = document.getElementById('color-actual');
             const imagenColor = document.getElementById('imagen-color');
-        
-            // Al hacer clic en "Comenzar", se oculta el popup inicial y se muestra el contenido principal
-            startButton.onclick = function() {
-                popup.style.display = 'none'; // Ocultar el mensaje emergente
-                cameraPermissionPopup.style.display = 'flex'; 
-                iniciarDeteccion();  // Iniciar la detección de señas después de hacer clic en "Comenzar"
-            };
+            const startLevelButton = document.getElementById('start-level-button');
 
-            allowCameraButton.onclick = function() {
-                cameraPermissionPopup.style.display = 'none'; // Ocultar el popup de la cámara
-                contentContainer.style.display = 'flex'; // Mostrar el contenido del nivel
-                iniciarDeteccion();  // Iniciar la detección de señas y activar la cámara
-            };
-        
-            // Si el usuario no permite el uso de la cámara
-            denyCameraButton.onclick = function() {
-                cameraPermissionPopup.style.display = 'none'; // Ocultar el popup de la cámara
-                Swal.fire({
-                    title: 'Cámara requerida',
-                    text: 'Necesitas activar la cámara para poder realizar este nivel.',
-                    icon: 'warning',
-                    confirmButtonText: 'Ok'
-                }).then(() => {
-                    // Redirigir al usuario fuera del nivel o bloquear el acceso
-                    window.location.href = '/levels/';
+            // Cargar el color y la imagen iniciales al cargar la página
+            cargarColorYImagenInicial();
+
+            function cargarColorYImagenInicial() {
+                $.ajax({
+                    url: "{% url 'core:colores' %}",  // URL de la vista para obtener el color actual
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            colorActual.innerText = response.letra_actual;
+                            imagenColor.src = response.senal_detectada;
+                        } else if (response.status === 'completado') {
+                            Swal.fire({
+                                title: 'Nivel completado',
+                                text: response.mensaje,
+                                icon: 'info',
+                                confirmButtonText: 'Ir al feedback'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = response.redirigir;
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Error al cargar el color y la imagen inicial:', error);
+                    }
                 });
-            };
-
-            //Función para mostrar el mensaje de éxito cuando el color es correcto
-            function mostrarMensajeExito() {
-                successMessage.style.display = 'flex'; 
             }
 
-            //Función para enviar el color detectado al servidor para validación
+            // Mostrar el popup inicial y luego iniciar detección al permitir cámara
+            startLevelButton.onclick = function() {
+                popup.style.display = 'none';
+
+                const cameraPermissionPopup = document.createElement('div');
+                cameraPermissionPopup.classList.add('fixed', 'inset-0', 'flex', 'justify-center', 'items-center', 'bg-black', 'bg-opacity-50', 'z-50');
+                cameraPermissionPopup.innerHTML = `
+                    <div class="p-8 rounded-lg shadow-lg text-center w-96" style="background-color: #EFE9E9; margin-top: 90px;">
+                        <h2 class="text-2xl font-semibold mb-4" style="font-family: 'Jomolhari', serif;">Activar Cámara</h2>
+                        <p class="text-gray-600 mb-6" style="font-family: 'Jomolhari', serif;">Para realizar el nivel, necesitamos acceso a tu cámara. ¿Deseas encender la cámara ahora?</p>
+                        <button id="allow-camera-button" class="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md mr-4" style="background-color: #A0A38A; font-family: 'Jomolhari', serif;">Permitir</button>
+                        <button id="deny-camera-button" class="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-md mt-2" style="background-color: #E37E18; font-family: 'Jomolhari', serif;">No permitir</button>
+                    </div>
+                `;
+                document.body.appendChild(cameraPermissionPopup);
+
+                const allowCameraButton = document.getElementById('allow-camera-button');
+                const denyCameraButton = document.getElementById('deny-camera-button');
+
+                allowCameraButton.onclick = function() {
+                    cameraPermissionPopup.remove();
+                    contentContainer.style.display = 'flex';
+                    iniciarDeteccion(); // La función de detección original se inicia aquí
+                };
+
+                denyCameraButton.onclick = function() {
+                    cameraPermissionPopup.remove();
+                    Swal.fire({
+                        title: 'Cámara requerida',
+                        text: 'Necesitas activar la cámara para poder realizar este nivel.',
+                        icon: 'warning',
+                        confirmButtonText: 'Ok'
+                    }).then(() => {
+                        window.location.href = '/levels/';
+                    });
+                };
+            };
+
+            // Función para mostrar el mensaje de éxito cuando el color es correcto
+            function mostrarMensajeExito() {
+                successMessage.style.display = 'flex';
+            }
+
+            // Función para enviar el color detectado al servidor y recibir el siguiente color
             function onColorDetectado(senal_detectada) {
                 $.ajax({
                     url: "{% url 'core:colores' %}",  
@@ -116,13 +144,11 @@
                                     confirmButtonText: 'Ir al siguiente nivel'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
-                                        //Redirigir al usuario a la pantalla de niveles
                                         window.location.href = response.redirigir;
                                     }
                                 });
                             } else {
-                                mostrarMensajeExito(); //Mostrar el mensaje de éxito
-                                // Al hacer clic en el botón "Siguiente", actualizar el color actual y la imagen
+                                mostrarMensajeExito();
                                 nextButton.onclick = function() {
                                     colorActual.innerText = response.nuevo_color;
                                     imagenColor.src = response.nueva_imagen;
@@ -130,32 +156,27 @@
                                 };
                             }
                         } else {
-                            console.log('Seña incorrecto');
+                            console.log('Seña incorrecta');
                         }
                     },
                     error: function(xhr, status, error) {
                         console.log('Error al enviar la seña detectada:', error);
                     }
                 });
-            }            
+            }
 
-            //Función para hacer una petición al backend y detectar el color en tiempo real
+            // Realizar una petición al backend para detectar el color en tiempo real
             function detectarColorDesdeBackend() {
-                const tipoLeccion = '{{ tipo_leccion }}'; 
-                console.log("Tipo de lección enviado:", tipoLeccion); 
-            
                 $.ajax({
                     url: "{% url 'core:detectar_senal' %}",
                     type: 'POST',
                     data: {
-                        'tipo_leccion': tipoLeccion,
+                        'tipo_leccion': 'colores',
                         'csrfmiddlewaretoken': '{{ csrf_token }}'
                     },
                     success: function(response) {
                         if (response.status === 'success') {
-                            //Si se detecta un color correctamente, procesa la respuesta
-                            var senal_detectada = response.senal_detectada;
-                            onColorDetectado(senal_detectada);  //Procesa el color detectado
+                            onColorDetectado(response.senal_detectada);
                         } else {
                             console.log('No se detectó ningún color.');
                         }
@@ -164,13 +185,13 @@
                         console.log('Error al detectar el color:', error);
                     }
                 });
-            }                       
+            }
 
-            //Función para iniciar la detección de colores a intervalos regulares
+            // Iniciar la detección de colores a intervalos regulares
             function iniciarDeteccion() {
-                setInterval(detectarColorDesdeBackend, 2000);  //Llama a la IA cada 2 segundos
+                setInterval(detectarColorDesdeBackend, 2000);  // Llama a la detección de color cada 2 segundos
             }
         });
-    </script>    
+    </script>      
 </body>
 {% endblock %}

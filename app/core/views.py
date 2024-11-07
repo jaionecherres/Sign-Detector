@@ -46,13 +46,28 @@ def obtener_frame():
     global camera
     if camera is not None and camera.isOpened():
         ret, frame = camera.read()
-        if not ret:
-            logger.error("No se pudo leer el frame de la cámara.")
+        if not ret or frame is None:
+            logger.error("No se pudo leer el frame de la cámara o el frame es None. Intentando reiniciar la cámara.")
+            reiniciar_camara()  # Reinicia la cámara en caso de error
             return None
         return frame
     else:
-        logger.error("La cámara no está disponible o no se abrió correctamente.")
+        logger.error("La cámara no está disponible o no se abrió correctamente. Intentando reiniciar la cámara.")
+        reiniciar_camara()
         return None
+
+# Función para reiniciar la cámara
+def reiniciar_camara():
+    global camera
+    if camera is not None:
+        camera.release()
+    camera = cv2.VideoCapture(0)
+    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    if camera.isOpened():
+        logger.info("Cámara reiniciada correctamente.")
+    else:
+        logger.error("No se pudo reiniciar la cámara.")
 
 #*******************Generador para capturar frames de la cámara y hacer predicciones*******************
 # Generador para capturar los frames y hacer predicciones
@@ -76,6 +91,9 @@ def gen(tipo_modelo):
             elif tipo_modelo == 'colores':
                 model = inference_classifier2.model_colores
                 labels_dict = inference_classifier2.labels_dict_colores
+            elif tipo_modelo == 'evaluación_final':
+                model = inference_classifier2.model_senas
+                labels_dict = inference_classifier2.labels_dict_senas
 
             #Realizar predicción y dibujar el recuadro
             predicted_sign = inference_classifier2.predict_sign(frame, model, labels_dict, tipo_modelo)
@@ -117,6 +135,9 @@ def detectar_senal(request):
     elif tipo_leccion == 'colores':
         model = inference_classifier2.model_colores
         labels_dict = inference_classifier2.labels_dict_colores
+    elif tipo_leccion == 'evaluacion_final': 
+        model = inference_classifier2.model_senas
+        labels_dict = inference_classifier2.labels_dict_senas
     else:
         return JsonResponse({'status': 'error', 'mensaje': 'Tipo de lección no válido.'})
 
@@ -147,6 +168,9 @@ class LeccionDetailView(DetailView):
         context["title1"] = self.object.name
         tipo_leccion = self.object.nivel.name.lower()
         context["tipo_leccion"] = tipo_leccion
+        if tipo_leccion != 'evaluación_final':
+            context["nivel"] = self.object.nivel
+        
         return context
 
     #Define la plantilla según el tipo de lección
@@ -158,8 +182,10 @@ class LeccionDetailView(DetailView):
             return ['core/lecciones/numeros.html'] 
         elif tipo_leccion == 'colores':
             return ['core/lecciones/colores.html'] 
+        elif tipo_leccion == 'evaluación_final': 
+            return ['core/lecciones/evaluacion_final.html']
         else:
-            return ['core/lecciones/detail.html']  #Plantilla predeterminada 
+            return ['core/lecciones/evaluacion_final.html']  #Plantilla predeterminada 
 
 def feedback_nivel(request, nivel_id):
     nivel = get_object_or_404(Nivel, id=nivel_id)
@@ -171,32 +197,57 @@ def feedback_nivel(request, nivel_id):
         return JsonResponse({'status': 'error', 'mensaje': 'Debes completar el nivel antes de acceder al feedback.'})
 
     # Determinar el tipo de feedback basado en el nivel
-    tipo_feedback = 'alfabeto' if nivel.orden == 1 else 'numeros'
-    request.session['tipo_feedback'] = tipo_feedback  # Almacena el tipo de feedback en la sesión
+    if nivel.orden == 1:
+        tipo_feedback = 'alfabeto'
+        template_name = 'core/lecciones/feedback.html'
+    elif nivel.orden == 2:
+        tipo_feedback = 'numeros'
+        template_name = 'core/lecciones/feedback_num.html'
+    elif nivel.orden == 3:
+        tipo_feedback = 'colores'
+        template_name = 'core/lecciones/feedback_colores.html'
+    else:
+        return JsonResponse({'status': 'error', 'mensaje': 'Nivel de feedback no reconocido.'})
     
+    request.session['tipo_feedback'] = tipo_feedback
+
+    # Configuración inicial para cada tipo de feedback
     alfabeto = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
     numeros = list(range(0, 11))  # Del 0 al 10
+    COLORES_CALIDOS = ['Rojo', 'Naranja', 'Amarillo', 'Rosa', 'Cafe']
+    COLORES_FRIOS = ['Verde', 'Azul', 'Morado', 'Negro', 'Blanco']
 
-    # Establecer el elemento actual (letra o número) en función del tipo de feedback
     if tipo_feedback == 'alfabeto':
         letra_actual = request.session.get('letra_actual_feedback', alfabeto[0])
         try:
-            senal_inicial = Senal.objects.get(name=letra_actual)
-            senal_detectada = senal_inicial.imagen.url
+            senal = Senal.objects.get(name=letra_actual)
+            senal_detectada = senal.video.url if senal.video else senal.imagen.url
+            es_video = bool(senal.video)
         except Senal.DoesNotExist:
             senal_detectada = None
-    else:  # tipo_feedback == 'numeros'
+            es_video = False
+    elif tipo_feedback == 'numeros':
         numero_actual = request.session.get('numero_actual_feedback', numeros[0])
         try:
-            senal_inicial = Senal.objects.get(name=str(numero_actual))
-            senal_detectada = senal_inicial.imagen.url
+            senal = Senal.objects.get(name=str(numero_actual))
+            senal_detectada = senal.video.url if senal.video else senal.imagen.url
+            es_video = bool(senal.video)
         except Senal.DoesNotExist:
             senal_detectada = None
+            es_video = False
+    elif tipo_feedback == 'colores':
+        color_actual = request.session.get('color_actual_feedback', COLORES_CALIDOS[0])
+        categoria_colores = COLORES_CALIDOS if color_actual in COLORES_CALIDOS else COLORES_FRIOS
+        try:
+            senal = Senal.objects.get(name=color_actual)
+            senal_detectada = senal.video.url if senal.video else senal.imagen.url
+            es_video = bool(senal.video)
+        except Senal.DoesNotExist:
+            senal_detectada = None
+            es_video = False
 
     if request.method == 'GET':
-        # Comprobar si la solicitud es AJAX para responder con JSON
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            # Restablecer al primer elemento del tipo de feedback seleccionado
             if tipo_feedback == 'alfabeto':
                 request.session['letra_actual_feedback'] = alfabeto[0]
                 return JsonResponse({
@@ -205,7 +256,7 @@ def feedback_nivel(request, nivel_id):
                     'senal_detectada': senal_detectada,
                     'tipo_feedback': 'alfabeto'
                 })
-            else:
+            elif tipo_feedback == 'numeros':
                 request.session['numero_actual_feedback'] = numeros[0]
                 return JsonResponse({
                     'status': 'success',
@@ -213,30 +264,35 @@ def feedback_nivel(request, nivel_id):
                     'senal_detectada': senal_detectada,
                     'tipo_feedback': 'numeros'
                 })
+            elif tipo_feedback == 'colores':
+                request.session['color_actual_feedback'] = COLORES_CALIDOS[0]
+                return JsonResponse({
+                    'status': 'success',
+                    'color_actual': color_actual,
+                    'senal_detectada': senal_detectada,
+                    'tipo_feedback': 'colores'
+                })
         else:
-            # Seleccionar el HTML adecuado según el tipo de feedback
-            template_name = 'core/lecciones/feedback.html' if tipo_feedback == 'alfabeto' else 'core/lecciones/feedback_num.html'
-
-            # Reiniciar a la primera letra o número
+            # Renderizar el HTML adecuado según el tipo de feedback
             request.session['letra_actual_feedback'] = alfabeto[0]
             request.session['numero_actual_feedback'] = numeros[0]
+            request.session['color_actual_feedback'] = COLORES_CALIDOS[0]
             return render(request, template_name, {
                 'senal_detectada': senal_detectada,
                 'letra_actual': letra_actual if tipo_feedback == 'alfabeto' else None,
                 'numero_actual': numero_actual if tipo_feedback == 'numeros' else None,
+                'color_actual': color_actual.capitalize() if tipo_feedback == 'colores' else None,
                 'nivel': nivel,
                 'tipo_feedback': tipo_feedback
             })
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
-        senal_realizada = request.POST.get('senal_realizada')
+        senal_realizada = request.POST.get('senal_realizada', '').strip().lower()
 
-        # Lógica de feedback para el alfabeto
         if tipo_feedback == 'alfabeto':
-            if senal_realizada == letra_actual:
+            if senal_realizada == letra_actual.lower():
                 indice_letra = alfabeto.index(letra_actual)
                 if indice_letra == len(alfabeto) - 1:
-                    # Completar el feedback del alfabeto
                     request.session['letra_actual_feedback'] = alfabeto[0]
                     return JsonResponse({
                         'status': 'success',
@@ -245,16 +301,12 @@ def feedback_nivel(request, nivel_id):
                         'redirigir': '/levels/'
                     })
                 else:
-                    # Ir a la siguiente letra
                     letra_actual = alfabeto[indice_letra + 1]
                     request.session['letra_actual_feedback'] = letra_actual
-
                     try:
-                        senal_inicial = Senal.objects.get(name=letra_actual)
-                        nueva_imagen = senal_inicial.imagen.url
+                        nueva_imagen = Senal.objects.get(name=letra_actual).imagen.url
                     except Senal.DoesNotExist:
                         nueva_imagen = None
-
                     return JsonResponse({
                         'status': 'success',
                         'nueva_letra': letra_actual,
@@ -263,13 +315,10 @@ def feedback_nivel(request, nivel_id):
                         'tipo_feedback': 'alfabeto'
                     })
 
-        # Lógica de feedback para los números
         elif tipo_feedback == 'numeros':
-            # Verificar si la señal realizada es un número y coincide con el número actual
             if senal_realizada.isdigit() and int(senal_realizada) == numero_actual:
                 indice_numero = numeros.index(numero_actual)
                 if indice_numero == len(numeros) - 1:
-                    # Completar el feedback de los números
                     request.session['numero_actual_feedback'] = numeros[0]
                     return JsonResponse({
                         'status': 'success',
@@ -278,16 +327,12 @@ def feedback_nivel(request, nivel_id):
                         'redirigir': '/levels/'
                     })
                 else:
-                    # Ir al siguiente número
                     numero_actual = numeros[indice_numero + 1]
                     request.session['numero_actual_feedback'] = numero_actual
-
                     try:
-                        senal_inicial = Senal.objects.get(name=str(numero_actual))
-                        nueva_imagen = senal_inicial.imagen.url
+                        nueva_imagen = Senal.objects.get(name=str(numero_actual)).imagen.url
                     except Senal.DoesNotExist:
                         nueva_imagen = None
-
                     return JsonResponse({
                         'status': 'success',
                         'nuevo_numero': numero_actual,
@@ -296,8 +341,45 @@ def feedback_nivel(request, nivel_id):
                         'tipo_feedback': 'numeros'
                     })
 
-        return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
+        elif tipo_feedback == 'colores':
+            if senal_realizada == color_actual.lower():
+                indice_color = categoria_colores.index(color_actual)
+                
+                if indice_color == len(categoria_colores) - 1:
+                    # Si es el último color cálido, pasar a los fríos
+                    if categoria_colores == COLORES_CALIDOS:
+                        request.session['color_actual_feedback'] = COLORES_FRIOS[0]
+                        request.session['categoria_colores'] = 'fríos'
+                        return JsonResponse({
+                            'status': 'transition',
+                            'mensaje': '¡Colores cálidos completados! Ahora, continúa con los colores fríos.',
+                            'nuevo_color': COLORES_FRIOS[0].capitalize(),
+                            'nueva_imagen': Senal.objects.get(name=COLORES_FRIOS[0]).imagen.url
+                        })
+                    # Si es el último color frío, finalizar feedback
+                    else:
+                        return JsonResponse({
+                            'status': 'success',
+                            'mensaje': '¡Has completado el feedback de los colores!',
+                            'completado': True,
+                            'redirigir': '/levels/'
+                        })
+                else:
+                    color_actual = categoria_colores[indice_color + 1]
+                    request.session['color_actual_feedback'] = color_actual
+                try:
+                    nueva_imagen = Senal.objects.get(name=color_actual).imagen.url
+                except Senal.DoesNotExist:
+                    nueva_imagen = None
+                return JsonResponse({
+                    'status': 'success',
+                    'nuevo_color': color_actual.capitalize(),
+                    'nueva_imagen': nueva_imagen,
+                    'mensaje': '¡Color correcto! Continúa con el siguiente color.',
+                    'tipo_feedback': 'colores'
+                })
 
+        return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
 
 #***********************Vista específica para manejar la lección de alfabeto***********************
 
@@ -607,9 +689,13 @@ def colores(request):
         senal_detectada = None
         logger.error(f"No se encontró imagen para el color {color_actual}")
 
-    if request.method == 'GET':
-        return render(request, 'colores.html', {'senal_detectada': senal_detectada, 'color_actual': color_actual, 'progreso': progreso})
-
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'letra_actual': color_actual,
+            'senal_detectada': senal_detectada,
+        })
+        
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         color_realizado = request.POST.get('color_realizado')
         logger.info(f"Color realizado: {color_realizado}, color actual: {color_actual}")
@@ -683,3 +769,78 @@ def colores(request):
             })
 
         return JsonResponse({'status': 'error', 'mensaje': 'Seña de color incorrecta, inténtalo de nuevo.'})
+
+def evaluacion_final(request):
+    # Lista de señas específicas a completar en orden
+    lista_senas = ['A', 'B', 'C', '1', '2', '3', 'Rojo', 'Verde', 'Cafe']
+    senal_actual = request.session.get('senal_actual', lista_senas[0])
+
+    # Obtener el nivel y progreso del usuario
+    nivel_evaluacion_final = Nivel.objects.get(name='evaluacion_final')
+    progreso, _ = Progreso.objects.get_or_create(usuario=request.user, nivel=nivel_evaluacion_final)
+
+    # Verificar si el nivel está completo
+    if progreso.completado:
+        return JsonResponse({
+            'status': 'completado',
+            'mensaje': 'Ya completaste la Evaluación Final! Puedes dirigirte al menú de niveles.',
+            'redirigir': '/levels/'
+        })
+
+    # Intentar obtener la señal actual
+    try:
+        senal_inicial = Senal.objects.get(name=senal_actual)
+        senal_detectada = senal_inicial.imagen.url
+    except Senal.DoesNotExist:
+        senal_detectada = None
+
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'status': 'success',
+            'senal_actual': senal_actual,
+            'senal_detectada': senal_detectada,
+        })
+
+    # Procesar la seña realizada por el usuario (si la solicitud es POST)
+    if request.method == 'POST':
+        senal_realizada = request.POST.get('senal_realizada')
+        if senal_realizada == senal_actual:
+            # Avanzar a la siguiente seña
+            indice_actual = lista_senas.index(senal_actual)
+            if indice_actual == len(lista_senas) - 1:
+                # Si es la última seña, marcar como completado
+                progreso.completado = True
+                progreso.fecha_completado = now()
+                progreso.save()
+
+                # Actualizar el dashboard del usuario
+                try:
+                    dashboard, _ = Dashboard.objects.get_or_create(usuario=request.user)
+                    dashboard.nivel_actual = None  # No hay más niveles después de la evaluación final
+                    dashboard.actualizar_dashboard()
+                except Exception as e:
+                    return JsonResponse({
+                        'status': 'error',
+                        'mensaje': f'Error al actualizar el dashboard: {str(e)}'
+                    })
+
+                return JsonResponse({
+                    'status': 'success',
+                    'mensaje': '¡Felicidades! Has completado la Evaluación Final.',
+                    'completado': True,
+                    'redirigir': '/levels/'
+                })
+            else:
+                # Avanzar a la siguiente seña en la evaluación final
+                senal_actual = lista_senas[indice_actual + 1]
+                request.session['senal_actual'] = senal_actual
+
+                nueva_imagen = Senal.objects.get(name=senal_actual).imagen.url if Senal.objects.filter(name=senal_actual).exists() else None
+                return JsonResponse({
+                    'status': 'success',
+                    'nueva_senal': senal_actual,
+                    'nueva_imagen': nueva_imagen,
+                    'mensaje': '¡Seña correcta! Continúa con la siguiente seña.',
+                })
+
+        return JsonResponse({'status': 'error', 'mensaje': 'Seña incorrecta, inténtalo de nuevo.'})
